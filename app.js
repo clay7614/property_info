@@ -27,17 +27,24 @@ let moveInChart = null;
 // データキャッシュ
 let cachedHistory = [];
 
+// 前回の表示データ（変更検知用）
+let previousData = null;
+
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
 async function initializeApp() {
+    // テーマの初期化
+    initTheme();
+    
     // イベントリスナーの設定
     document.getElementById('refreshBtn').addEventListener('click', loadData);
     document.getElementById('exportBtn').addEventListener('click', exportData);
     document.getElementById('clearBtn').addEventListener('click', clearLocalData);
     document.getElementById('historyBtn').addEventListener('click', showHistoryManager);
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     
     // グラフ範囲ボタンのイベント
     document.querySelectorAll('.chart-btn').forEach(btn => {
@@ -48,8 +55,112 @@ async function initializeApp() {
         });
     });
     
+    // 前回のデータを読み込み
+    loadPreviousData();
+    
     // データを読み込み
     await loadData();
+}
+
+// テーマ関連の関数
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+    
+    // グラフを再描画（テーマ変更時に色を更新するため）
+    if (cachedHistory.length > 0) {
+        const activeRange = document.querySelector('.chart-btn.active')?.dataset.range || '7';
+        updateCharts(activeRange);
+    }
+}
+
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('themeToggle');
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+// 前回のデータを保存・読み込み
+function savePreviousData(data) {
+    localStorage.setItem('previousPropertyData', JSON.stringify(data));
+}
+
+function loadPreviousData() {
+    const saved = localStorage.getItem('previousPropertyData');
+    if (saved) {
+        previousData = JSON.parse(saved);
+    }
+}
+
+// 変更を検出
+function detectChanges(currentProperties) {
+    if (!previousData) return null;
+    
+    const changes = [];
+    let hasMarch2026Change = false;
+    
+    currentProperties.forEach(current => {
+        const prev = previousData.find(p => p.id === current.id);
+        if (!prev) return;
+        
+        // 物件数の変化
+        if (current.count !== prev.count) {
+            const diff = current.count - prev.count;
+            const direction = diff > 0 ? '増加' : '減少';
+            changes.push(`${current.name}: ${Math.abs(diff)}件${direction}`);
+        }
+        
+        // 入居時期の変化をチェック
+        const currentMoveIn = current.moveInBreakdown || {};
+        const prevMoveIn = prev.moveInBreakdown || {};
+        
+        // 26年3月入居の変化を特別にチェック
+        const marchKeys = Object.keys(currentMoveIn).filter(k => isMarch2026(k));
+        const prevMarchKeys = Object.keys(prevMoveIn).filter(k => isMarch2026(k));
+        
+        const currentMarchTotal = marchKeys.reduce((sum, k) => sum + currentMoveIn[k], 0);
+        const prevMarchTotal = prevMarchKeys.reduce((sum, k) => sum + prevMoveIn[k], 0);
+        
+        if (currentMarchTotal !== prevMarchTotal) {
+            const diff = currentMarchTotal - prevMarchTotal;
+            if (diff > 0) {
+                changes.push(`🌸 ${current.name}: 26年3月入居が${diff}件増加！`);
+                hasMarch2026Change = true;
+            } else {
+                changes.push(`${current.name}: 26年3月入居が${Math.abs(diff)}件減少`);
+            }
+        }
+    });
+    
+    return changes.length > 0 ? { changes, hasMarch2026Change } : null;
+}
+
+// アラートを表示
+function showChangeAlert(changeInfo) {
+    const alertEl = document.getElementById('changeAlert');
+    const messageEl = document.getElementById('alertMessage');
+    
+    if (changeInfo.hasMarch2026Change) {
+        alertEl.classList.add('highlight-march');
+    } else {
+        alertEl.classList.remove('highlight-march');
+    }
+    
+    messageEl.innerHTML = changeInfo.changes.join('<br>');
+    alertEl.style.display = 'flex';
+}
+
+// アラートを閉じる
+function dismissAlert() {
+    document.getElementById('changeAlert').style.display = 'none';
 }
 
 // サーバーからデータを読み込み
@@ -77,6 +188,17 @@ async function loadData() {
         
         // 最新のデータを表示
         const latestEntry = cachedHistory[cachedHistory.length - 1];
+        
+        // 変更を検出
+        const changeInfo = detectChanges(latestEntry.properties);
+        if (changeInfo) {
+            showChangeAlert(changeInfo);
+        }
+        
+        // 現在のデータを保存（次回の比較用）
+        savePreviousData(latestEntry.properties);
+        previousData = latestEntry.properties;
+        
         displayProperties(latestEntry.properties);
         updateSummary(latestEntry.properties);
         updateCharts('7');
@@ -564,3 +686,8 @@ function deleteSelectedHistory() {
     showHistoryManager(); // リストを更新
     alert(`${indices.length}件の履歴を削除しました。`);
 }
+
+// グローバルに公開する関数（HTML onclick用）
+window.closeHistoryModal = closeHistoryModal;
+window.deleteSelectedHistory = deleteSelectedHistory;
+window.dismissAlert = dismissAlert;

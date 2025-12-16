@@ -10,7 +10,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>🏠 SUUMO 物件情報トラッカー</h1>
+            <div class="header-top">
+                <h1>🏠 SUUMO 物件情報トラッカー</h1>
+                <button id="themeToggle" class="theme-toggle" title="テーマ切り替え">🌙</button>
+            </div>
             <p class="subtitle">弁天町エリアの賃貸物件をリアルタイムで監視</p>
             <div class="last-updated">
                 <span id="lastUpdated">最終データ取得: --</span>
@@ -19,6 +22,16 @@
         </header>
 
         <main>
+            <!-- 変更通知 -->
+            <div id="changeAlert" class="change-alert" style="display: none;">
+                <div class="alert-icon">⚡</div>
+                <div class="alert-content">
+                    <div class="alert-title">物件情報が更新されました</div>
+                    <div class="alert-message" id="alertMessage"></div>
+                </div>
+                <button class="alert-close" onclick="dismissAlert()">&times;</button>
+            </div>
+
             <!-- 物件カード一覧 -->
             <section class="properties-section">
                 <h2>📋 掲載中の物件</h2>
