@@ -85,7 +85,7 @@ function toggleTheme() {
 
 function updateThemeIcon(theme) {
     const btn = document.getElementById('themeToggle');
-    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
 }
 
 // 前回のデータを保存・読み込み
@@ -132,7 +132,7 @@ function detectChanges(currentProperties) {
         if (currentMarchTotal !== prevMarchTotal) {
             const diff = currentMarchTotal - prevMarchTotal;
             if (diff > 0) {
-                changes.push(`🌸 ${current.name}: 26年3月入居が${diff}件増加！`);
+                changes.push(`[注目] ${current.name}: 26年3月入居が${diff}件増加！`);
                 hasMarch2026Change = true;
             } else {
                 changes.push(`${current.name}: 26年3月入居が${Math.abs(diff)}件減少`);
@@ -167,7 +167,7 @@ function dismissAlert() {
 async function loadData() {
     const refreshBtn = document.getElementById('refreshBtn');
     refreshBtn.disabled = true;
-    refreshBtn.textContent = '🔄 読み込み中...';
+    refreshBtn.textContent = '読み込み中...';
     
     const propertiesGrid = document.getElementById('propertiesGrid');
     propertiesGrid.innerHTML = '<div class="loading">データを読み込み中...</div>';
@@ -220,7 +220,7 @@ async function loadData() {
         `;
     } finally {
         refreshBtn.disabled = false;
-        refreshBtn.textContent = '🔄 データ再読み込み';
+        refreshBtn.textContent = 'データ再読み込み';
     }
 }
 
@@ -253,7 +253,7 @@ function displayProperties(properties) {
                     </div>
                 </div>
                 <div class="move-in-breakdown">
-                    <h4>📅 入居時期の内訳</h4>
+                    <h4>入居時期の内訳</h4>
                     <div class="move-in-list">
                         ${moveInHtml}
                     </div>

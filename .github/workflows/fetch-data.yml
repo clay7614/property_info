@@ -52,7 +52,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add data/property_history.json
-          git commit -m "📊 Update property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
+          git commit -m "Update: property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
           git push
       
       # 毎朝7時(UTC 22:00)または手動実行時にメール送信
