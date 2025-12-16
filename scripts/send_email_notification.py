@@ -8,7 +8,14 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# 日本標準時 (JST = UTC+9)
+JST = timezone(timedelta(hours=9))
+
+def get_jst_now():
+    """現在のJST時刻を取得"""
+    return datetime.now(JST)
 
 DATA_FILE = 'data/property_history.json'
 
@@ -159,7 +166,7 @@ def send_email(subject: str, body: str, to_email: str):
 
 def main():
     """メイン処理"""
-    print(f"メール通知開始: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"メール通知開始: {get_jst_now().strftime('%Y-%m-%d %H:%M:%S')} JST")
     
     # 送信先メールアドレス
     to_email = os.environ.get('NOTIFICATION_EMAIL', 'clays7614@gmail.com')
@@ -175,7 +182,7 @@ def main():
     
     # 26年3月入居の件数を件名に含める
     march_count = count_march_2026(data.get('properties', []))
-    date_str = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+    date_str = data.get('date', get_jst_now().strftime('%Y-%m-%d'))
     
     if march_count > 0:
         subject = f"🌸【26年3月入居{march_count}件】SUUMO物件情報 {date_str}"
@@ -185,7 +192,7 @@ def main():
     # メール送信
     success = send_email(subject, body, to_email)
     
-    print(f"メール通知終了: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"メール通知終了: {get_jst_now().strftime('%Y-%m-%d %H:%M:%S')} JST")
     return 0 if success else 1
 
 

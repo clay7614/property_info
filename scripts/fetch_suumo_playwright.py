@@ -7,8 +7,15 @@ import json
 import re
 import os
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from playwright.async_api import async_playwright
+
+# 日本標準時 (JST = UTC+9)
+JST = timezone(timedelta(hours=9))
+
+def get_jst_now():
+    """JSTの現在時刻を取得"""
+    return datetime.now(JST)
 
 # 監視対象の物件
 PROPERTIES = [
@@ -155,7 +162,7 @@ def save_history(history: list):
 
 async def main():
     """メイン処理"""
-    print(f"開始: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"開始: {get_jst_now().strftime('%Y-%m-%d %H:%M:%S')} JST")
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -178,7 +185,7 @@ async def main():
     successful = [p for p in properties_data if p.get('success')]
     
     if successful:
-        now = datetime.now()
+        now = get_jst_now()
         entry = {
             'timestamp': now.isoformat(),
             'date': now.strftime('%Y-%m-%d'),
@@ -197,7 +204,7 @@ async def main():
     else:
         print("データ取得失敗")
     
-    print(f"終了: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"終了: {get_jst_now().strftime('%Y-%m-%d %H:%M:%S')} JST")
     return 0 if successful else 1
 
 
