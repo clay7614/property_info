@@ -426,13 +426,17 @@ function updateMoveInChart(history) {
         return {
             label: category,
             data: data,
-            backgroundColor: getColorForCategory(category),
-            borderRadius: 4
+            borderColor: getColorForCategory(category),
+            backgroundColor: getColorForCategory(category) + '33',
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6
         };
     });
     
     moveInChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: { labels, datasets },
         options: {
             responsive: true,
@@ -444,10 +448,11 @@ function updateMoveInChart(history) {
             },
             scales: {
                 x: {
-                    stacked: true
+                    grid: {
+                        display: false
+                    }
                 },
                 y: {
-                    stacked: true,
                     beginAtZero: true,
                     title: {
                         display: true,
