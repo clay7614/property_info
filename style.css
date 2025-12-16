@@ -474,6 +474,7 @@ section h2 {
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    color: var(--text-primary);
 }
 
 .chart-btn:hover {
@@ -507,6 +508,7 @@ section h2 {
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
+    color: var(--text-primary);
 }
 
 .data-btn:hover {
