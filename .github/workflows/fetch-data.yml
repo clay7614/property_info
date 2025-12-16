@@ -1,0 +1,68 @@
+name: Fetch SUUMO Data
+
+on:
+  # 定期実行: 日本時間 7:00, 12:00, 17:00 (UTC: 22:00前日, 03:00, 08:00)
+  schedule:
+    - cron: '0 22 * * *'  # JST 7:00
+    - cron: '0 3 * * *'   # JST 12:00
+    - cron: '0 8 * * *'   # JST 17:00
+  
+  # 手動実行も可能
+  workflow_dispatch:
+    inputs:
+      send_email:
+        description: 'メール通知を送信する'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+      
+      - name: Fetch SUUMO data
+        run: python scripts/fetch_suumo_playwright.py
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --quiet data/property_history.json || echo "changes=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/property_history.json
+          git commit -m "📊 Update property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
+          git push
+      
+      # 毎朝7時(UTC 22:00)または手動実行時にメール送信
+      - name: Send email notification
+        if: github.event.schedule == '0 22 * * *' || github.event.inputs.send_email == 'true'
+        env:
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.SMTP_USER }}
+          NOTIFICATION_EMAIL: clays7614@gmail.com
+        run: python scripts/send_email_notification.py
