@@ -14,7 +14,6 @@
             <p class="subtitle">弁天町エリアの賃貸物件をリアルタイムで監視</p>
             <div class="last-updated">
                 <span id="lastUpdated">最終データ取得: --</span>
-                <button id="refreshBtn" class="refresh-btn">データ再読み込み</button>
             </div>
         </header>
 
@@ -82,10 +81,11 @@
                 </div>
             </section>
 
-            <!-- 設定 -->
+            <!-- 管理 -->
             <section class="data-section">
-                <h2>設定</h2>
+                <h2>管理</h2>
                 <div class="data-controls">
+                    <button id="refreshBtn" class="data-btn">データ再読み込み</button>
                     <button id="themeToggle" class="data-btn">テーマ切り替え</button>
                     <a href="https://github.com/clay7614/property_info/actions/workflows/fetch-data.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">データ取得を実行</a>
                     <button id="exportBtn" class="data-btn">データをエクスポート</button>
