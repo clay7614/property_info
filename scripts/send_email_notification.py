@@ -212,6 +212,8 @@ def create_email_content(data: dict, changes: list) -> str:
         "",
         "このメールは自動送信されています。",
         "詳細はWebサイトをご確認ください。",
+        "",
+        "Webサイト: https://clay7614.github.io/property_info/",
     ])
     
     return '\n'.join(lines)
