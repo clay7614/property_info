@@ -3,14 +3,15 @@
 物件を削除するスクリプト
 """
 
-import re
+import json
 import sys
 import os
+from common import load_properties, save_properties
 
 
 def remove_property(property_identifier: str) -> bool:
     """
-    fetch_suumo_playwright.pyのPROPERTIESリストから物件を削除
+    properties.jsonから物件を削除
     
     Args:
         property_identifier: 物件IDまたは物件名
@@ -20,55 +21,31 @@ def remove_property(property_identifier: str) -> bool:
     """
     print(f"物件を削除: {property_identifier}")
     
-    # fetch_suumo_playwright.py を読み込み
-    script_path = 'scripts/fetch_suumo_playwright.py'
-    with open(script_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    properties = load_properties()
     
-    # まず物件名で検索
-    property_by_name_pattern = re.compile(
-        r"    \{\s*\n"
-        r"        'id': '(.*?)',\s*\n"
-        r"        'name': '" + re.escape(property_identifier) + r"',\s*\n"
-        r"        'url': '.*?'\s*\n"
-        r"    \},?\s*\n",
-        re.MULTILINE
-    )
+    # 物件名またはIDで検索
+    target_property = None
+    for prop in properties:
+        if prop['name'] == property_identifier or prop['id'] == property_identifier:
+            target_property = prop
+            break
     
-    match = property_by_name_pattern.search(content)
-    
-    # 物件名で見つからない場合、IDで検索
-    if not match:
-        property_by_id_pattern = re.compile(
-            r"    \{\s*\n"
-            r"        'id': '" + re.escape(property_identifier) + r"',\s*\n"
-            r"        'name': '(.*?)',\s*\n"
-            r"        'url': '.*?'\s*\n"
-            r"    \},?\s*\n",
-            re.MULTILINE
-        )
-        match = property_by_id_pattern.search(content)
-    
-    if not match:
+    if not target_property:
         print(f"エラー: 物件 '{property_identifier}' が見つかりませんでした")
         print("物件名またはIDが正確であることを確認してください")
         return False
     
-    # 物件情報を表示
-    property_id = re.search(r"'id': '(.*?)'", match.group(0))
-    property_name = re.search(r"'name': '(.*?)'", match.group(0))
-    if property_id and property_name:
-        print(f"削除する物件: {property_name.group(1)} (ID: {property_id.group(1)})")
+    print(f"削除する物件: {target_property['name']} (ID: {target_property['id']})")
     
-    # 物件エントリを削除
-    new_content = content.replace(match.group(0), '')
+    # リストから削除
+    properties.remove(target_property)
     
-    # ファイルに書き込み
-    with open(script_path, 'w', encoding='utf-8') as f:
-        f.write(new_content)
-    
-    print(f"物件を削除しました")
-    return True
+    # 保存
+    if save_properties(properties):
+        print(f"物件を削除しました")
+        return True
+    else:
+        return False
 
 
 def list_properties() -> list:
@@ -78,29 +55,7 @@ def list_properties() -> list:
     Returns:
         list: 物件情報のリスト
     """
-    script_path = 'scripts/fetch_suumo_playwright.py'
-    with open(script_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # PROPERTIESリストから物件を抽出
-    properties = []
-    property_pattern = re.compile(
-        r"    \{\s*\n"
-        r"        'id': '(.*?)',\s*\n"
-        r"        'name': '(.*?)',\s*\n"
-        r"        'url': '(.*?)'\s*\n"
-        r"    \}",
-        re.MULTILINE
-    )
-    
-    for match in property_pattern.finditer(content):
-        properties.append({
-            'id': match.group(1),
-            'name': match.group(2),
-            'url': match.group(3)
-        })
-    
-    return properties
+    return load_properties()
 
 
 def main():

@@ -9,17 +9,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
-
-DATA_FILE = 'data/property_history.json'
-
-
-def load_history():
-    """履歴データを読み込み"""
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            history = json.load(f)
-            return history if history else []
-    return []
+from common import load_history
 
 
 def load_latest_data():

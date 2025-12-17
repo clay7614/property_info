@@ -3,14 +3,16 @@
 物件を追加するスクリプト
 """
 
+import json
 import re
 import sys
 import os
+from common import load_properties, save_properties
 
 
 def add_property(property_name: str, property_url: str) -> bool:
     """
-    fetch_suumo_playwright.pyのPROPERTIESリストに物件を追加
+    properties.jsonに物件を追加
     
     Args:
         property_name: 物件名
@@ -34,53 +36,30 @@ def add_property(property_name: str, property_url: str) -> bool:
     
     print(f"生成されたID: {property_id}")
     
-    # fetch_suumo_playwright.py を読み込み
-    script_path = 'scripts/fetch_suumo_playwright.py'
-    with open(script_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    # properties.jsonを読み込み
+    properties = load_properties()
     
     # 既に同じIDが存在するかチェック
-    if f"'id': '{property_id}'" in content:
+    if any(p['id'] == property_id for p in properties):
         print(f"物件ID '{property_id}' は既に存在します")
         return False
     
-    # PROPERTIESリストの最後の項目を見つける
-    properties_match = re.search(
-        r'(PROPERTIES = \[.*?\n)((?:.*?\n)*?)(\])',
-        content,
-        re.DOTALL
-    )
-    
-    if not properties_match:
-        print("エラー: PROPERTIESリストが見つかりませんでした")
-        return False
-    
     # 新しい物件エントリを作成
-    new_property_lines = [
-        "    {",
-        f"        'id': '{property_id}',",
-        f"        'name': '{property_name}',",
-        f"        'url': '{property_url}'",
-        "    },",
-    ]
-    new_property = '\n'.join(new_property_lines) + '\n'
+    new_property = {
+        'id': property_id,
+        'name': property_name,
+        'url': property_url
+    }
     
-    # PROPERTIESリストを更新
-    before = properties_match.group(1)
-    existing_props = properties_match.group(2)
-    after = properties_match.group(3)
+    # リストに追加
+    properties.append(new_property)
     
-    new_content = content.replace(
-        properties_match.group(0),
-        before + existing_props + new_property + after
-    )
-    
-    # ファイルに書き込み
-    with open(script_path, 'w', encoding='utf-8') as f:
-        f.write(new_content)
-    
-    print(f"物件を追加しました: {property_name} (ID: {property_id})")
-    return True
+    # 保存
+    if save_properties(properties):
+        print(f"物件を追加しました: {property_name} (ID: {property_id})")
+        return True
+    else:
+        return False
 
 
 def main():

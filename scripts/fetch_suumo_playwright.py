@@ -9,6 +9,7 @@ import os
 import asyncio
 from datetime import datetime, timezone, timedelta
 from playwright.async_api import async_playwright
+from common import load_properties, load_history, save_history
 
 # 日本標準時 (JST = UTC+9)
 JST = timezone(timedelta(hours=9))
@@ -16,27 +17,6 @@ JST = timezone(timedelta(hours=9))
 def get_jst_now():
     """JSTの現在時刻を取得"""
     return datetime.now(JST)
-
-# 監視対象の物件
-PROPERTIES = [
-    {
-        'id': 'esreed_grande',
-        'name': 'エスリードレジデンス大阪弁天町',
-        'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002461672/'
-    },
-    {
-        'id': 'esreed_glanz',
-        'name': 'エスリード弁天町グランツ',
-        'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002440443/'
-    },
-    {
-        'id': 'forearize_cross',
-        'name': 'フォーリアライズ弁天町クロス',
-        'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002426103/'
-    },
-]
-
-DATA_FILE = 'data/property_history.json'
 
 
 async def fetch_property_data(page, property_info: dict, retry_count: int = 0) -> dict:
@@ -148,27 +128,14 @@ def parse_move_in_dates(html: str) -> dict:
     return breakdown
 
 
-def load_history() -> list:
-    """履歴データを読み込み"""
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return []
-
-
-def save_history(history: list):
-    """履歴データを保存"""
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-
-
 async def main():
     """メイン処理"""
     print(f"開始: {get_jst_now().strftime('%Y-%m-%d %H:%M:%S')} JST")
+    
+    properties = load_properties()
+    if not properties:
+        print("エラー: 監視対象の物件が読み込めませんでした")
+        return 1
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(
@@ -182,7 +149,7 @@ async def main():
         page = await context.new_page()
         
         properties_data = []
-        for prop in PROPERTIES:
+        for prop in properties:
             data = await fetch_property_data(page, prop)
             properties_data.append(data)
         
@@ -206,7 +173,7 @@ async def main():
             history = history[-200:]
         
         save_history(history)
-        print(f"保存完了: {len(successful)}/{len(PROPERTIES)} 物件")
+        print(f"保存完了: {len(successful)}/{len(properties)} 物件")
     else:
         print("データ取得失敗")
     
