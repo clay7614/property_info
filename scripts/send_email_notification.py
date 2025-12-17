@@ -183,25 +183,18 @@ def create_email_content(data: dict, changes: list) -> str:
             "",
         ])
     
-    # 各物件の情報
+    # 各物件の情報（空室数とURLのみ）
     total_count = 0
     for prop in properties:
         name = prop.get('name', '不明')
         count = prop.get('count', 0)
         url = prop.get('url', '')
-        breakdown = prop.get('moveInBreakdown', {})
-        success = prop.get('success', False)
         
         total_count += count
         
         lines.append("-" * 40)
         lines.append(f"[物件] {name}")
         lines.append(f"   空室数: {count}件")
-        
-        if breakdown:
-            lines.append("   入居時期:")
-            lines.append(format_move_in_breakdown(breakdown))
-        
         lines.append(f"   URL: {url}")
         lines.append("")
     
