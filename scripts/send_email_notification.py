@@ -88,29 +88,29 @@ def format_move_in_breakdown(breakdown: dict) -> str:
     if not breakdown:
         return "データなし"
     
-    # 26年3月を優先的に表示
+    # カテゴリ別に分類
     march_2026 = []
-    immediate = []
-    other = []
+    flexible = []
+    scheduled = []
     
     for key, count in breakdown.items():
-        if key == '即入居可':
-            immediate.append(f"  * {key}: {count}件")
-        elif '26年3月' in key:
+        if '26年3月' in key:
             march_2026.append(f"  * {key}: {count}件")
+        elif key in ['即入居可', '相談']:
+            flexible.append(f"  * {key}: {count}件")
         else:
-            other.append(f"  • {key}: {count}件")
+            scheduled.append(f"  * {key}: {count}件")
     
     result = []
     if march_2026:
         result.append("  【26年3月入居 *注目*】")
         result.extend(sorted(march_2026))
-    if immediate:
-        result.append("  【即入居可】")
-        result.extend(immediate)
-    if other:
-        result.append("  【その他】")
-        result.extend(sorted(other))
+    if flexible:
+        result.append("  【即入居可・相談】")
+        result.extend(sorted(flexible))
+    if scheduled:
+        result.append("  【時期指定あり】")
+        result.extend(sorted(scheduled))
     
     return '\n'.join(result)
 
