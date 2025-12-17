@@ -48,31 +48,10 @@ jobs:
           PROPERTY_IDENTIFIER: ${{ github.event.inputs.property_identifier }}
         run: python scripts/remove_property.py
       
-      - name: Install dependencies
-        run: |
-          pip install playwright
-          playwright install chromium
-          playwright install-deps chromium
-      
-      - name: Fetch updated data
-        run: python scripts/fetch_suumo_playwright.py
-      
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add scripts/fetch_suumo_playwright.py
-          git add data/property_history.json
           git commit -m "Remove property: ${{ github.event.inputs.property_identifier }}"
           git push
-      
-      - name: Send notification email
-        env:
-          SMTP_SERVER: smtp.gmail.com
-          SMTP_PORT: 587
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          FROM_EMAIL: ${{ secrets.SMTP_USER }}
-          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL || 'clays7614@gmail.com' }}
-          FORCE_SEND: 'true'
-        run: python scripts/send_email_notification.py
