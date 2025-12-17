@@ -34,6 +34,11 @@ PROPERTIES = [
         'name': 'フォーリアライズ弁天町クロス',
         'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002426103/'
     },
+    {
+        'id': 'property_1002088044',
+        'name': 'アヴァンツァーレ弁天',
+        'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002088044/'
+    },
 ]
 
 DATA_FILE = 'data/property_history.json'
