@@ -345,5 +345,54 @@
         "success": true
       }
     ]
+  },
+  {
+    "timestamp": "2025-12-17T15:58:03.777644+09:00",
+    "date": "2025-12-17",
+    "time": "15:58:03",
+    "properties": [
+      {
+        "id": "esreed_grande",
+        "name": "エスリードレジデンス大阪弁天町",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002461672/",
+        "count": 106,
+        "moveInBreakdown": {
+          "相談": 46,
+          "即入居可": 58,
+          "25年12月下旬": 2
+        },
+        "success": true
+      },
+      {
+        "id": "esreed_glanz",
+        "name": "エスリード弁天町グランツ",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
+        "count": 45,
+        "moveInBreakdown": {
+          "26年2月中旬": 3,
+          "26年2月下旬": 22,
+          "26年1月下旬": 3,
+          "相談": 10,
+          "即入居可": 6,
+          "25年12月下旬": 1
+        },
+        "success": true
+      },
+      {
+        "id": "forearize_cross",
+        "name": "フォーリアライズ弁天町クロス",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
+        "count": 21,
+        "moveInBreakdown": {
+          "25年12月下旬": 2,
+          "相談": 9,
+          "即入居可": 3,
+          "26年1月下旬": 3,
+          "26年1月中旬": 3,
+          "26年5月下旬": 1
+        },
+        "success": true
+      }
+    ]
   }
 ]
