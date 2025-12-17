@@ -1,22 +1,3 @@
-// 物件情報の設定
-const PROPERTIES = [
-    {
-        id: 'esreed_grande',
-        name: 'エスリードレジデンス弁天町グランデ',
-        url: 'https://suumo.jp/library/tf_27/sc_27107/to_1002461672/'
-    },
-    {
-        id: 'esreed_glanz',
-        name: 'エスリード弁天町グランツ',
-        url: 'https://suumo.jp/library/tf_27/sc_27107/to_1002440443/'
-    },
-    {
-        id: 'forearize_cross',
-        name: 'フォーリアライズ弁天町クロス',
-        url: 'https://suumo.jp/library/tf_27/sc_27107/to_1002426103/'
-    }
-];
-
 // サーバーデータのURL
 const SERVER_DATA_URL = 'data/property_history.json';
 
@@ -371,12 +352,21 @@ function updatePropertyChart(history) {
         return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     });
     
-    const datasets = PROPERTIES.map((property, index) => {
+    // 最新のデータから物件リストを取得
+    const latestEntry = history[history.length - 1];
+    const properties = latestEntry.properties;
+    
+    const datasets = properties.map((property, index) => {
         const colors = [
             { border: 'rgb(37, 99, 235)', background: 'rgba(37, 99, 235, 0.1)' },
             { border: 'rgb(34, 197, 94)', background: 'rgba(34, 197, 94, 0.1)' },
-            { border: 'rgb(245, 158, 11)', background: 'rgba(245, 158, 11, 0.1)' }
+            { border: 'rgb(245, 158, 11)', background: 'rgba(245, 158, 11, 0.1)' },
+            { border: 'rgb(239, 68, 68)', background: 'rgba(239, 68, 68, 0.1)' },
+            { border: 'rgb(168, 85, 247)', background: 'rgba(168, 85, 247, 0.1)' },
+            { border: 'rgb(236, 72, 153)', background: 'rgba(236, 72, 153, 0.1)' }
         ];
+        
+        const colorIndex = index % colors.length;
         
         const data = history.map(h => {
             const p = h.properties.find(pr => pr.id === property.id);
@@ -386,8 +376,8 @@ function updatePropertyChart(history) {
         return {
             label: property.name,
             data: data,
-            borderColor: colors[index].border,
-            backgroundColor: colors[index].background,
+            borderColor: colors[colorIndex].border,
+            backgroundColor: colors[colorIndex].background,
             fill: true,
             tension: 0.3
         };
