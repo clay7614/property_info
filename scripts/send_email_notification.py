@@ -109,7 +109,7 @@ def format_move_in_breakdown(breakdown: dict) -> str:
         result.append("  【即入居可・相談】")
         result.extend(sorted(flexible))
     if scheduled:
-        result.append("  【時期指定あり】")
+        result.append("  【時期指定】")
         result.extend(sorted(scheduled))
     
     return '\n'.join(result)
@@ -183,18 +183,25 @@ def create_email_content(data: dict, changes: list) -> str:
             "",
         ])
     
-    # 各物件の情報（空室数とURLのみ）
+    # 各物件の情報
     total_count = 0
     for prop in properties:
         name = prop.get('name', '不明')
         count = prop.get('count', 0)
         url = prop.get('url', '')
+        breakdown = prop.get('moveInBreakdown', {})
+        success = prop.get('success', False)
         
         total_count += count
         
         lines.append("-" * 40)
         lines.append(f"[物件] {name}")
         lines.append(f"   空室数: {count}件")
+        
+        if breakdown:
+            lines.append("   入居時期:")
+            lines.append(format_move_in_breakdown(breakdown))
+        
         lines.append(f"   URL: {url}")
         lines.append("")
     
