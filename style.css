@@ -714,6 +714,44 @@ footer p {
     border-top: 1px solid var(--border-color);
 }
 
+/* トークン設定フォーム */
+.token-form {
+    padding: 20px 0;
+}
+
+.token-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    margin-top: 10px;
+}
+
+.token-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.token-help {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-left: 3px solid var(--accent-primary);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.token-help strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 5px;
+}
+
 /* 履歴リスト */
 .history-list {
     max-height: 400px;
