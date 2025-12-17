@@ -55,9 +55,9 @@ jobs:
           git commit -m "Update: property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
           git push
       
-      # 毎朝7時(UTC 22:00)または手動実行時にメール送信
+      # 物件情報に変化があった場合または手動実行時にメール送信
       - name: Send email notification
-        if: github.event.schedule == '0 22 * * *' || github.event.inputs.send_email == 'true'
+        if: steps.check_changes.outputs.changes == 'true' || github.event.inputs.send_email == 'true'
         env:
           SMTP_SERVER: smtp.gmail.com
           SMTP_PORT: 587
@@ -65,4 +65,5 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           FROM_EMAIL: ${{ secrets.SMTP_USER }}
           NOTIFICATION_EMAIL: clays7614@gmail.com
+          FORCE_SEND: ${{ github.event.inputs.send_email == 'true' && 'true' || 'false' }}
         run: python scripts/send_email_notification.py

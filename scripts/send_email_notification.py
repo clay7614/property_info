@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-物件情報のメール通知スクリプト
+物件情報の変更通知メールスクリプト
 """
 
 import json
@@ -13,14 +13,74 @@ from datetime import datetime
 DATA_FILE = 'data/property_history.json'
 
 
-def load_latest_data():
-    """最新のデータを読み込み"""
+def load_history():
+    """履歴データを読み込み"""
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
             history = json.load(f)
-            if history:
-                return history[-1]
+            return history if history else []
+    return []
+
+
+def load_latest_data():
+    """最新のデータを読み込み"""
+    history = load_history()
+    if history:
+        return history[-1]
     return None
+
+
+def load_previous_data():
+    """前回のデータを読み込み"""
+    history = load_history()
+    if len(history) >= 2:
+        return history[-2]
+    return None
+
+
+def detect_changes(current_properties, previous_properties):
+    """物件情報の変更を検出"""
+    if not previous_properties:
+        return None
+    
+    changes = []
+    
+    for current in current_properties:
+        prev = next((p for p in previous_properties if p['id'] == current['id']), None)
+        if not prev:
+            continue
+        
+        # 物件数の変化
+        if current.get('count', 0) != prev.get('count', 0):
+            diff = current.get('count', 0) - prev.get('count', 0)
+            direction = '増加' if diff > 0 else '減少'
+            changes.append({
+                'property': current['name'],
+                'type': 'count',
+                'message': f"物件数: {prev.get('count', 0)}件 → {current.get('count', 0)}件 ({abs(diff)}件{direction})"
+            })
+        
+        # 入居時期の変化をチェック
+        current_breakdown = current.get('moveInBreakdown', {})
+        prev_breakdown = prev.get('moveInBreakdown', {})
+        
+        all_keys = set(current_breakdown.keys()) | set(prev_breakdown.keys())
+        for key in all_keys:
+            curr_count = current_breakdown.get(key, 0)
+            prev_count = prev_breakdown.get(key, 0)
+            if curr_count != prev_count:
+                diff = curr_count - prev_count
+                direction = '増加' if diff > 0 else '減少'
+                is_march_2026 = '26年3月' in key
+                changes.append({
+                    'property': current['name'],
+                    'type': 'move_in',
+                    'key': key,
+                    'is_march_2026': is_march_2026,
+                    'message': f"{key}: {prev_count}件 → {curr_count}件 ({abs(diff)}件{direction})"
+                })
+    
+    return changes if changes else None
 
 
 def format_move_in_breakdown(breakdown: dict) -> str:
@@ -35,15 +95,15 @@ def format_move_in_breakdown(breakdown: dict) -> str:
     
     for key, count in breakdown.items():
         if key == '即入居可':
-            immediate.append(f"  ⚡ {key}: {count}件")
+            immediate.append(f"  * {key}: {count}件")
         elif '26年3月' in key:
-            march_2026.append(f"  🌸 {key}: {count}件")
+            march_2026.append(f"  * {key}: {count}件")
         else:
             other.append(f"  • {key}: {count}件")
     
     result = []
     if march_2026:
-        result.append("  【26年3月入居 ★注目★】")
+        result.append("  【26年3月入居 *注目*】")
         result.extend(sorted(march_2026))
     if immediate:
         result.append("  【即入居可】")
@@ -66,7 +126,7 @@ def count_march_2026(properties: list) -> int:
     return total
 
 
-def create_email_content(data: dict) -> str:
+def create_email_content(data: dict, changes: list) -> str:
     """メール本文を作成"""
     timestamp = data.get('timestamp', '')
     date_str = data.get('date', '')
@@ -76,20 +136,50 @@ def create_email_content(data: dict) -> str:
     # 26年3月入居の合計
     march_count = count_march_2026(properties)
     
+    # 26年3月入居の変更があるかチェック
+    has_march_2026_change = any(c.get('is_march_2026') for c in (changes or []))
+    
     lines = [
         "=" * 50,
-        "🏠 SUUMO 物件情報 日報",
+        "SUUMO 物件情報 変更通知",
         "=" * 50,
-        f"取得日時: {date_str} {time_str}",
+        f"検出日時: {date_str} {time_str}",
         "",
     ]
+    
+    # 変更内容を表示
+    if changes:
+        lines.extend([
+            "変更内容:",
+            "-" * 40,
+        ])
+        
+        # 物件ごとに変更をまとめる
+        changes_by_property = {}
+        for change in changes:
+            prop_name = change['property']
+            if prop_name not in changes_by_property:
+                changes_by_property[prop_name] = []
+            changes_by_property[prop_name].append(change)
+        
+        for prop_name, prop_changes in changes_by_property.items():
+            lines.append(f"[物件] {prop_name}")
+            for change in prop_changes:
+                if change.get('is_march_2026'):
+                    lines.append(f"  * {change['message']} *注目*")
+                else:
+                    lines.append(f"  • {change['message']}")
+            lines.append("")
+        
+        lines.append("-" * 40)
+        lines.append("")
     
     # 26年3月入居があれば強調
     if march_count > 0:
         lines.extend([
-            "★" * 25,
-            f"🌸 26年3月入居: {march_count}件 あり！",
-            "★" * 25,
+            "*" * 25,
+            f"26年3月入居: 現在{march_count}件",
+            "*" * 25,
             "",
         ])
     
@@ -105,7 +195,7 @@ def create_email_content(data: dict) -> str:
         total_count += count
         
         lines.append("-" * 40)
-        lines.append(f"📍 {name}")
+        lines.append(f"[物件] {name}")
         lines.append(f"   空室数: {count}件")
         
         if breakdown:
@@ -159,33 +249,56 @@ def send_email(subject: str, body: str, to_email: str):
 
 def main():
     """メイン処理"""
-    print(f"メール通知開始: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"変更通知メール開始: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # 送信先メールアドレス
     to_email = os.environ.get('NOTIFICATION_EMAIL', 'clays7614@gmail.com')
     
-    # 最新データを読み込み
+    # 最新データと前回データを読み込み
     data = load_latest_data()
     if not data:
         print("データがありません")
         return 1
     
-    # メール本文を作成
-    body = create_email_content(data)
+    previous_data = load_previous_data()
     
-    # 26年3月入居の件数を件名に含める
+    # 変更を検出
+    changes = None
+    if previous_data:
+        changes = detect_changes(
+            data.get('properties', []),
+            previous_data.get('properties', [])
+        )
+    
+    if not changes:
+        print("物件情報に変更がありません")
+        # 変更がなくても手動実行の場合は送信（環境変数で制御）
+        if os.environ.get('FORCE_SEND') != 'true':
+            return 0
+        print("FORCE_SEND=true のため送信を継続します")
+    
+    # メール本文を作成
+    body = create_email_content(data, changes)
+    
+    # 件名を作成
     march_count = count_march_2026(data.get('properties', []))
     date_str = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+    time_str = data.get('time', datetime.now().strftime('%H:%M'))
     
-    if march_count > 0:
-        subject = f"🌸【26年3月入居{march_count}件】SUUMO物件情報 {date_str}"
+    # 26年3月入居の変更があるかチェック
+    has_march_2026_change = any(c.get('is_march_2026') for c in (changes or []))
+    
+    if has_march_2026_change:
+        subject = f"【26年3月入居に変更あり】SUUMO物件情報 {date_str} {time_str}"
+    elif march_count > 0:
+        subject = f"【物件情報更新】SUUMO {date_str} {time_str} (26年3月: {march_count}件)"
     else:
-        subject = f"🏠 SUUMO物件情報 {date_str}"
+        subject = f"【物件情報更新】SUUMO {date_str} {time_str}"
     
     # メール送信
     success = send_email(subject, body, to_email)
     
-    print(f"メール通知終了: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"変更通知メール終了: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     return 0 if success else 1
 
 
