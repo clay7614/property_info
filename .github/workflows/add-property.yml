@@ -1,0 +1,122 @@
+name: Add Property Manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      property_name:
+        description: '物件名 (Property Name)'
+        required: true
+        type: string
+      property_url:
+        description: '物件URL (Property URL)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  add-property:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Add property to configuration
+        run: |
+          python3 << 'EOF'
+          import re
+          import sys
+          
+          # 入力を取得
+          property_name = """${{ github.event.inputs.property_name }}"""
+          property_url = """${{ github.event.inputs.property_url }}"""
+          
+          # URLからIDを生成（アルファベット小文字とアンダースコアのみ）
+          # URLの最後の部分 to_XXXXXXXX を使用
+          url_match = re.search(r'/to_(\d+)/?$', property_url)
+          if url_match:
+              property_id = f"property_{url_match.group(1)}"
+          else:
+              print(f"Error: Could not extract property ID from URL: {property_url}")
+              sys.exit(1)
+          
+          # fetch_suumo_playwright.py を読み込み
+          with open('scripts/fetch_suumo_playwright.py', 'r', encoding='utf-8') as f:
+              content = f.read()
+          
+          # 既に同じIDが存在するかチェック
+          if f"'id': '{property_id}'" in content:
+              print(f"Property with ID '{property_id}' already exists")
+              sys.exit(1)
+          
+          # PROPERTIESリストの最後の項目を見つける
+          properties_match = re.search(
+              r'(PROPERTIES = \[.*?\n)((?:.*?\n)*?)(\])',
+              content,
+              re.DOTALL
+          )
+          
+          if not properties_match:
+              print("Error: Could not find PROPERTIES list")
+              sys.exit(1)
+          
+          # 新しい物件を追加
+          new_property = f"""    {{
+          'id': '{property_id}',
+          'name': '{property_name}',
+          'url': '{property_url}'
+      }},
+  """
+          
+          # PROPERTIESリストを更新
+          before = properties_match.group(1)
+          existing_props = properties_match.group(2)
+          after = properties_match.group(3)
+          
+          new_content = content.replace(
+              properties_match.group(0),
+              before + existing_props + new_property + after
+          )
+          
+          # ファイルに書き込み
+          with open('scripts/fetch_suumo_playwright.py', 'w', encoding='utf-8') as f:
+              f.write(new_content)
+          
+          print(f"Successfully added property: {property_name} (ID: {property_id})")
+          EOF
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+      
+      - name: Fetch initial data for new property
+        run: python scripts/fetch_suumo_playwright.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add scripts/fetch_suumo_playwright.py
+          git add data/property_history.json
+          git commit -m "Add property: ${{ github.event.inputs.property_name }}"
+          git push
+      
+      - name: Send notification email
+        env:
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.SMTP_USER }}
+          NOTIFICATION_EMAIL: clays7614@gmail.com
+          FORCE_SEND: 'true'
+        run: python scripts/send_email_notification.py
