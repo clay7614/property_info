@@ -33,7 +33,7 @@ PROPERTIES = [
         'id': 'forearize_cross',
         'name': 'フォーリアライズ弁天町クロス',
         'url': 'https://suumo.jp/library/tf_27/sc_27107/to_1002426103/'
-    }
+    },
 ]
 
 DATA_FILE = 'data/property_history.json'
