@@ -1,0 +1,71 @@
+name: Remove Property Manually
+
+"on":
+  workflow_dispatch:
+    inputs:
+      property_id:
+        description: '削除する物件ID (Property ID)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  remove-property:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: List current properties
+        run: |
+          echo "現在登録されている物件:"
+          python3 -c "
+          import re
+          with open('scripts/fetch_suumo_playwright.py', 'r', encoding='utf-8') as f:
+              content = f.read()
+          pattern = re.compile(r\"'id': '(.*?)',\\s*\\n\\s*'name': '(.*?)'\", re.MULTILINE)
+          for match in pattern.finditer(content):
+              print(f\"  - {match.group(1)}: {match.group(2)}\")
+          "
+      
+      - name: Remove property from configuration
+        env:
+          PROPERTY_ID: ${{ github.event.inputs.property_id }}
+        run: python scripts/remove_property.py
+      
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium
+          playwright install-deps chromium
+      
+      - name: Fetch updated data
+        run: python scripts/fetch_suumo_playwright.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add scripts/fetch_suumo_playwright.py
+          git add data/property_history.json
+          git commit -m "Remove property: ${{ github.event.inputs.property_id }}"
+          git push
+      
+      - name: Send notification email
+        env:
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          FROM_EMAIL: ${{ secrets.SMTP_USER }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL || 'clays7614@gmail.com' }}
+          FORCE_SEND: 'true'
+        run: python scripts/send_email_notification.py
