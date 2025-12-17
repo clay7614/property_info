@@ -231,10 +231,6 @@ function displayProperties(properties) {
     const cards = properties.map(property => {
         const moveInHtml = formatMoveInBreakdown(property.moveInBreakdown);
         
-        // 入居時期の合計を計算
-        const moveInTotal = property.moveInBreakdown ? 
-            Object.values(property.moveInBreakdown).reduce((sum, v) => sum + v, 0) : 0;
-        
         // SUUMOのURLを取得
         const propConfig = PROPERTIES.find(p => p.id === property.id);
         const url = propConfig ? propConfig.url : '#';
@@ -246,10 +242,6 @@ function displayProperties(properties) {
                     <div class="stat-row">
                         <span class="stat-label">掲載中の物件数</span>
                         <span class="stat-value">${property.count}件</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">入居時期データ数</span>
-                        <span class="stat-value">${moveInTotal}件</span>
                     </div>
                 </div>
                 <div class="move-in-breakdown">
