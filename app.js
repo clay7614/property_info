@@ -212,9 +212,8 @@ function displayProperties(properties) {
     const cards = properties.map(property => {
         const moveInHtml = formatMoveInBreakdown(property.moveInBreakdown);
         
-        // SUUMOのURLを取得
-        const propConfig = PROPERTIES.find(p => p.id === property.id);
-        const url = propConfig ? propConfig.url : '#';
+        // 物件データから直接URLを取得
+        const url = property.url || '#';
         
         return `
             <div class="property-card fade-in">
