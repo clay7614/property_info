@@ -189,7 +189,6 @@ def create_email_content(data: dict, changes: list) -> str:
         name = prop.get('name', '不明')
         count = prop.get('count', 0)
         url = prop.get('url', '')
-        success = prop.get('success', False)
         
         total_count += count
         

@@ -51,6 +51,8 @@ jobs:
               property_id = f"property_{url_match.group(1)}"
           else:
               print(f"Error: Could not extract property ID from URL: {property_url}")
+              print(f"Expected URL format: https://suumo.jp/library/.../to_XXXXXXXXXX/")
+              print(f"Please provide a valid SUUMO property URL")
               sys.exit(1)
           
           print(f"Generated ID: {property_id}")
@@ -127,6 +129,6 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           FROM_EMAIL: ${{ secrets.SMTP_USER }}
-          NOTIFICATION_EMAIL: clays7614@gmail.com
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL || 'clays7614@gmail.com' }}
           FORCE_SEND: 'true'
         run: python scripts/send_email_notification.py
