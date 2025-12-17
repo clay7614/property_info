@@ -87,42 +87,13 @@
                 <h2>設定</h2>
                 <div class="data-controls">
                     <button id="themeToggle" class="data-btn">テーマ切り替え</button>
-                    <button id="runWorkflowBtn" class="data-btn">データ取得を実行</button>
-                    <button id="tokenBtn" class="data-btn">トークン設定</button>
+                    <a href="https://github.com/clay7614/property_info/actions/workflows/fetch-data.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">データ取得を実行</a>
                     <button id="exportBtn" class="data-btn">データをエクスポート</button>
                     <button id="historyBtn" class="data-btn">履歴を管理</button>
                     <button id="clearBtn" class="data-btn danger">キャッシュをクリア</button>
                 </div>
             </section>
         </main>
-
-        <!-- トークン設定モーダル -->
-        <div id="tokenModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>GitHubトークン設定</h3>
-                    <button class="modal-close" onclick="closeTokenModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p class="modal-info">
-GitHub Actionsを実行するにはPersonal Access Tokenが必要です。<br>
-<small>※トークンはブラウザのローカルストレージに保存されます。</small>
-                    </p>
-                    <div class="token-form">
-                        <label for="githubToken">GitHub Personal Access Token:</label>
-                        <input type="password" id="githubToken" placeholder="ghp_..." class="token-input">
-                        <small class="token-help">
-トークンの生成: GitHub → Settings → Developer settings → Personal access tokens<br>
-必要な権限: <code>repo</code> と <code>workflow</code>
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="data-btn" onclick="closeTokenModal()">キャンセル</button>
-                    <button class="data-btn" onclick="saveToken()">保存</button>
-                </div>
-            </div>
-        </div>
 
         <!-- 履歴管理モーダル -->
         <div id="historyModal" class="modal">

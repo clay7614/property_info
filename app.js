@@ -45,8 +45,6 @@ async function initializeApp() {
     document.getElementById('clearBtn').addEventListener('click', clearLocalData);
     document.getElementById('historyBtn').addEventListener('click', showHistoryManager);
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    document.getElementById('runWorkflowBtn').addEventListener('click', runWorkflow);
-    document.getElementById('tokenBtn').addEventListener('click', showTokenModal);
     
     // グラフ範囲ボタンのイベント
     document.querySelectorAll('.chart-btn').forEach(btn => {
@@ -681,104 +679,7 @@ function deleteSelectedHistory() {
     alert(`${indices.length}件の履歴を削除しました。`);
 }
 
-// ====================================
-// GitHub Actions手動実行機能
-// ====================================
-
-// トークン設定モーダルを表示
-function showTokenModal() {
-    const modal = document.getElementById('tokenModal');
-    const input = document.getElementById('githubToken');
-    
-    // 既存のトークンを読み込み（マスク表示）
-    const token = localStorage.getItem('githubToken');
-    if (token) {
-        input.value = token;
-    }
-    
-    modal.style.display = 'block';
-}
-
-// トークン設定モーダルを閉じる
-function closeTokenModal() {
-    const modal = document.getElementById('tokenModal');
-    modal.style.display = 'none';
-}
-
-// トークンを保存
-function saveToken() {
-    const input = document.getElementById('githubToken');
-    const token = input.value.trim();
-    
-    if (!token) {
-        alert('トークンを入力してください。');
-        return;
-    }
-    
-    // localStorageに保存
-    localStorage.setItem('githubToken', token);
-    
-    alert('トークンを保存しました。');
-    closeTokenModal();
-}
-
-// GitHub Actionsワークフローを実行
-async function runWorkflow() {
-    const token = localStorage.getItem('githubToken');
-    
-    if (!token) {
-        alert('GitHub Personal Access Tokenが設定されていません。「トークン設定」ボタンからトークンを設定してください。');
-        return;
-    }
-    
-    // 実行確認
-    if (!confirm('データ取得ワークフローを実行しますか？\n処理には数分かかる場合があります。')) {
-        return;
-    }
-    
-    // ボタンを無効化
-    const btn = document.getElementById('runWorkflowBtn');
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = '実行中...';
-    
-    try {
-        // GitHub API呼び出し
-        const response = await fetch('https://api.github.com/repos/clay7614/property_info/actions/workflows/fetch-data.yml/dispatches', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/vnd.github+json',
-                'Authorization': `Bearer ${token}`,
-                'X-GitHub-Api-Version': '2022-11-28'
-            },
-            body: JSON.stringify({
-                ref: 'main'
-            })
-        });
-        
-        if (response.ok) {
-            alert('ワークフローの実行を開始しました。\n数分後に「データ更新」ボタンで最新データを取得してください。');
-        } else if (response.status === 401) {
-            alert('認証エラー: トークンが無効です。「トークン設定」から正しいトークンを設定してください。');
-        } else if (response.status === 404) {
-            alert('エラー: ワークフローが見つかりません。リポジトリとワークフロー名を確認してください。');
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            alert(`エラーが発生しました (${response.status}): ${errorData.message || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('Workflow dispatch error:', error);
-        alert('ワークフローの実行に失敗しました。ネットワーク接続を確認してください。');
-    } finally {
-        // ボタンを有効化
-        btn.disabled = false;
-        btn.textContent = originalText;
-    }
-}
-
 // グローバルに公開する関数（HTML onclick用）
 window.closeHistoryModal = closeHistoryModal;
 window.deleteSelectedHistory = deleteSelectedHistory;
 window.dismissAlert = dismissAlert;
-window.closeTokenModal = closeTokenModal;
-window.saveToken = saveToken;
