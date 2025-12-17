@@ -95,15 +95,15 @@ def format_move_in_breakdown(breakdown: dict) -> str:
     
     for key, count in breakdown.items():
         if key == '即入居可':
-            immediate.append(f"  ⚡ {key}: {count}件")
+            immediate.append(f"  * {key}: {count}件")
         elif '26年3月' in key:
-            march_2026.append(f"  🌸 {key}: {count}件")
+            march_2026.append(f"  * {key}: {count}件")
         else:
             other.append(f"  • {key}: {count}件")
     
     result = []
     if march_2026:
-        result.append("  【26年3月入居 ★注目★】")
+        result.append("  【26年3月入居 *注目*】")
         result.extend(sorted(march_2026))
     if immediate:
         result.append("  【即入居可】")
@@ -141,7 +141,7 @@ def create_email_content(data: dict, changes: list) -> str:
     
     lines = [
         "=" * 50,
-        "🏠 SUUMO 物件情報 変更通知",
+        "SUUMO 物件情報 変更通知",
         "=" * 50,
         f"検出日時: {date_str} {time_str}",
         "",
@@ -150,7 +150,7 @@ def create_email_content(data: dict, changes: list) -> str:
     # 変更内容を表示
     if changes:
         lines.extend([
-            "📢 変更内容:",
+            "変更内容:",
             "-" * 40,
         ])
         
@@ -163,10 +163,10 @@ def create_email_content(data: dict, changes: list) -> str:
             changes_by_property[prop_name].append(change)
         
         for prop_name, prop_changes in changes_by_property.items():
-            lines.append(f"📍 {prop_name}")
+            lines.append(f"[物件] {prop_name}")
             for change in prop_changes:
                 if change.get('is_march_2026'):
-                    lines.append(f"  🌸 {change['message']} ★注目★")
+                    lines.append(f"  * {change['message']} *注目*")
                 else:
                     lines.append(f"  • {change['message']}")
             lines.append("")
@@ -177,9 +177,9 @@ def create_email_content(data: dict, changes: list) -> str:
     # 26年3月入居があれば強調
     if march_count > 0:
         lines.extend([
-            "★" * 25,
-            f"🌸 26年3月入居: 現在{march_count}件",
-            "★" * 25,
+            "*" * 25,
+            f"26年3月入居: 現在{march_count}件",
+            "*" * 25,
             "",
         ])
     
@@ -195,7 +195,7 @@ def create_email_content(data: dict, changes: list) -> str:
         total_count += count
         
         lines.append("-" * 40)
-        lines.append(f"📍 {name}")
+        lines.append(f"[物件] {name}")
         lines.append(f"   空室数: {count}件")
         
         if breakdown:
@@ -289,11 +289,11 @@ def main():
     has_march_2026_change = any(c.get('is_march_2026') for c in (changes or []))
     
     if has_march_2026_change:
-        subject = f"🌸【26年3月入居に変更あり】SUUMO物件情報 {date_str} {time_str}"
+        subject = f"【26年3月入居に変更あり】SUUMO物件情報 {date_str} {time_str}"
     elif march_count > 0:
-        subject = f"📢【物件情報更新】SUUMO {date_str} {time_str} (26年3月: {march_count}件)"
+        subject = f"【物件情報更新】SUUMO {date_str} {time_str} (26年3月: {march_count}件)"
     else:
-        subject = f"📢【物件情報更新】SUUMO {date_str} {time_str}"
+        subject = f"【物件情報更新】SUUMO {date_str} {time_str}"
     
     # メール送信
     success = send_email(subject, body, to_email)
