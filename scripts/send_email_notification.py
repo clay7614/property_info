@@ -272,12 +272,23 @@ def main():
             previous_data.get('properties', [])
         )
     
-    if not changes:
+    # メール送信判定
+    has_changes = changes is not None
+    force_send = os.environ.get('FORCE_SEND') == 'true'
+    workflow_has_changes = os.environ.get('HAS_CHANGES') == 'true'
+    
+    if not has_changes and not force_send:
         print("物件情報に変更がありません")
-        # 変更がなくても手動実行の場合は送信（環境変数で制御）
-        if os.environ.get('FORCE_SEND') != 'true':
+        # 自動実行（cron）の場合は変更がなければスキップ
+        # 手動実行でチェックOFFの場合もスキップ
+        if not workflow_has_changes:
+            print("データ変更なし、メール送信をスキップします")
             return 0
+    
+    if force_send:
         print("FORCE_SEND=true のため送信を継続します")
+    elif has_changes:
+        print(f"変更を検出しました（{len(changes)}件）")
     
     # メール本文を作成
     body = create_email_content(data, changes)
