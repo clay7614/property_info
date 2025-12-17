@@ -10,10 +10,7 @@
 <body>
     <div class="container">
         <header>
-            <div class="header-top">
-                <h1>SUUMO 物件情報トラッカー</h1>
-                <button id="themeToggle" class="theme-toggle" title="テーマ切り替え">〇</button>
-            </div>
+            <h1>SUUMO 物件情報トラッカー</h1>
             <p class="subtitle">弁天町エリアの賃貸物件をリアルタイムで監視</p>
             <div class="last-updated">
                 <span id="lastUpdated">最終データ取得: --</span>
@@ -85,10 +82,11 @@
                 </div>
             </section>
 
-            <!-- データ管理 -->
+            <!-- 設定 -->
             <section class="data-section">
-                <h2>データ管理</h2>
+                <h2>設定</h2>
                 <div class="data-controls">
+                    <button id="themeToggle" class="data-btn">テーマ切り替え</button>
                     <button id="exportBtn" class="data-btn">データをエクスポート</button>
                     <button id="historyBtn" class="data-btn">履歴を管理</button>
                     <button id="clearBtn" class="data-btn danger">キャッシュをクリア</button>
