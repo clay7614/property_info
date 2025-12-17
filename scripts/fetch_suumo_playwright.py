@@ -39,7 +39,7 @@ PROPERTIES = [
 DATA_FILE = 'data/property_history.json'
 
 
-async def fetch_property_data(page, property_info: dict) -> dict:
+async def fetch_property_data(page, property_info: dict, retry_count: int = 0) -> dict:
     """物件データを取得"""
     print(f"取得中: {property_info['name']}")
     
@@ -91,6 +91,12 @@ async def fetch_property_data(page, property_info: dict) -> dict:
         move_in_breakdown = parse_move_in_dates(html)
         
         print(f"  物件数: {count}, 入居時期データ: {sum(move_in_breakdown.values())}")
+        
+        # 物件数が0件で、まだ再試行していない場合は再取得
+        if count == 0 and retry_count == 0:
+            print(f"  0件のため再試行します（10秒待機後）")
+            await page.wait_for_timeout(10000)  # 10秒待機
+            return await fetch_property_data(page, property_info, retry_count=1)
         
         return {
             'id': property_info['id'],
