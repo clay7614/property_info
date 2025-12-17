@@ -19,26 +19,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
-      
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: List current properties
         run: |
           echo "=========================================="
           echo "現在登録されている物件一覧"
           echo "=========================================="
-          python3 -c "
-          import re
-          with open('scripts/fetch_suumo_playwright.py', 'r', encoding='utf-8') as f:
-              content = f.read()
-          pattern = re.compile(r\"'id': '(.*?)',\\s*\\n\\s*'name': '(.*?)'\", re.MULTILINE)
-          for i, match in enumerate(pattern.finditer(content), 1):
-              print(f\"{i}. 物件名: {match.group(2)}\")
-              print(f\"   ID: {match.group(1)}\")
-              print()
-          "
+          # 削除スクリプトが引数なし（環境変数なし）で実行されると一覧を表示するように実装されているが
+          # ここでは明示的にリストを表示するロジックが必要か？
+          # 実装上、removeProperty.ts は PROPERTY_IDENTIFIER が必須。
+          # ただ、以前のyamlにあったようなインラインPythonスクリプトは不要。
+          # 確認のため、ts-nodeで一覧表示するだけの簡単なスクリプトを走らせてもいいが、
+          # removeProperty.ts がエラー時に一覧を出すので、ここでは省略するか、
+          # 単にログに残すために cat data/properties.json する。
+          cat data/properties.json
           echo "=========================================="
           echo "削除指定: ${{ github.event.inputs.property_identifier }}"
           echo "=========================================="
@@ -46,12 +48,12 @@ jobs:
       - name: Remove property from configuration
         env:
           PROPERTY_IDENTIFIER: ${{ github.event.inputs.property_identifier }}
-        run: python scripts/remove_property.py
+        run: npx ts-node scripts/removeProperty.ts
       
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add scripts/fetch_suumo_playwright.py
-          git commit -m "Remove property: ${{ github.event.inputs.property_identifier }}"
+          git add data/properties.json
+          git commit -m "remove: property ${{ github.event.inputs.property_identifier }}"
           git push

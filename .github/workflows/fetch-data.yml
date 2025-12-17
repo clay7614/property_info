@@ -21,19 +21,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
-      
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
         run: |
-          pip install playwright
-          playwright install chromium
-          playwright install-deps chromium
+          npm ci
+          npx playwright install chromium
+          npx playwright install-deps chromium
       
       - name: Fetch SUUMO data
-        run: python scripts/fetch_suumo_playwright.py
+        run: npx ts-node scripts/fetchSuumoData.ts
       
       - name: Check for changes
         id: check_changes
@@ -46,7 +47,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add data/property_history.json
-          git commit -m "Update: property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
+          git commit -m "update: property data - $(TZ=Asia/Tokyo date +'%Y-%m-%d %H:%M')"
           git push
       
       # 物件情報に変化があった場合または手動実行でチェックONの場合にメール送信
@@ -60,4 +61,4 @@ jobs:
           FROM_EMAIL: ${{ secrets.SMTP_USER }}
           NOTIFICATION_EMAIL: clays7614@gmail.com
           FORCE_SEND: ${{ github.event.inputs.send_email == 'true' && 'true' || 'false' }}
-        run: python scripts/send_email_notification.py
+        run: npx ts-node scripts/sendEmailNotification.ts
