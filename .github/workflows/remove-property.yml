@@ -3,9 +3,19 @@ name: Remove Property Manually
 "on":
   workflow_dispatch:
     inputs:
-      property_id:
-        description: '削除する物件ID (Property ID)'
+      property_selection:
+        description: '削除する物件を選択'
         required: true
+        type: choice
+        options:
+          - 'esreed_grande (エスリードレジデンス大阪弁天町)'
+          - 'esreed_glanz (エスリード弁天町グランツ)'
+          - 'forearize_cross (フォーリアライズ弁天町クロス)'
+          - 'property_1002088044 (アヴァンツァーレ弁天)'
+          - 'その他（ID直接入力）'
+      property_id:
+        description: '物件ID（「その他」選択時のみ入力）'
+        required: false
         type: string
 
 permissions:
@@ -24,6 +34,18 @@ jobs:
         with:
           python-version: '3.11'
       
+      - name: Determine property ID
+        id: determine_id
+        run: |
+          SELECTION="${{ github.event.inputs.property_selection }}"
+          if [[ "$SELECTION" == "その他（ID直接入力）" ]]; then
+            PROPERTY_ID="${{ github.event.inputs.property_id }}"
+          else
+            PROPERTY_ID=$(echo "$SELECTION" | cut -d' ' -f1)
+          fi
+          echo "property_id=$PROPERTY_ID" >> $GITHUB_OUTPUT
+          echo "削除する物件ID: $PROPERTY_ID"
+      
       - name: List current properties
         run: |
           echo "現在登録されている物件:"
@@ -38,7 +60,7 @@ jobs:
       
       - name: Remove property from configuration
         env:
-          PROPERTY_ID: ${{ github.event.inputs.property_id }}
+          PROPERTY_ID: ${{ steps.determine_id.outputs.property_id }}
         run: python scripts/remove_property.py
       
       - name: Install dependencies
@@ -56,7 +78,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add scripts/fetch_suumo_playwright.py
           git add data/property_history.json
-          git commit -m "Remove property: ${{ github.event.inputs.property_id }}"
+          git commit -m "Remove property: ${{ steps.determine_id.outputs.property_id }}"
           git push
       
       - name: Send notification email
