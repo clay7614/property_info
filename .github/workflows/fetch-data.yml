@@ -3,9 +3,9 @@ name: Fetch SUUMO Data
 on:
   # 定期実行: 日本時間 7:00, 12:00, 17:00 (UTC: 22:00前日, 03:00, 08:00)
   schedule:
-    - cron: '22 22 * * *'  # JST 7:00
-    - cron: '22 3 * * *'   # JST 12:00
-    - cron: '22 8 * * *'   # JST 17:00
+    - cron: '0 22 * * *'  # JST 7:00
+    - cron: '0 3 * * *'   # JST 12:00
+    - cron: '0 8 * * *'   # JST 17:00
   
   # 手動実行も可能
   workflow_dispatch:
