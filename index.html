@@ -81,14 +81,21 @@
                 </div>
             </section>
 
-            <!-- 管理 -->
+            <!-- 物件管理 -->
             <section class="data-section">
-                <h2>管理</h2>
+                <h2>物件管理</h2>
+                <div class="data-controls">
+                    <a href="https://github.com/clay7614/property_info/actions/workflows/fetch-data.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">データ取得を実行</a>
+                    <a href="https://github.com/clay7614/property_info/actions/workflows/add-property.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">物件を追加</a>
+                </div>
+            </section>
+
+            <!-- システム管理 -->
+            <section class="data-section">
+                <h2>システム管理</h2>
                 <div class="data-controls">
                     <button id="refreshBtn" class="data-btn">データ再読み込み</button>
                     <button id="themeToggle" class="data-btn">テーマ切り替え</button>
-                    <a href="https://github.com/clay7614/property_info/actions/workflows/fetch-data.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">データ取得を実行</a>
-                    <a href="https://github.com/clay7614/property_info/actions/workflows/add-property.yml" target="_blank" class="data-btn" style="display: inline-block; text-decoration: none; text-align: center;">物件を追加</a>
                     <button id="exportBtn" class="data-btn">データをエクスポート</button>
                     <button id="historyBtn" class="data-btn">履歴を管理</button>
                     <button id="clearBtn" class="data-btn danger">キャッシュをクリア</button>
