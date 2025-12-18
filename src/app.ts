@@ -2,32 +2,7 @@
  * SUUMO 物件情報トラッカー - フロントエンド
  */
 
-// 型定義
-interface MoveInBreakdown {
-    [key: string]: number;
-}
-
-interface PropertyData {
-    id: string;
-    name: string;
-    url: string;
-    count: number;
-    moveInBreakdown: MoveInBreakdown;
-    success: boolean;
-    error?: string;
-}
-
-interface HistoryEntry {
-    timestamp: string;
-    date: string;
-    time: string;
-    properties: PropertyData[];
-}
-
-interface ChangeInfo {
-    changes: string[];
-    hasMarch2026Change: boolean;
-}
+import { PropertyData, HistoryEntry, ChangeInfo, MoveInBreakdown } from './shared/types';
 
 // Chart.js のグローバル宣言
 declare const Chart: any;

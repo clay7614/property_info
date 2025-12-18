@@ -1,34 +1,39 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Property, HistoryEntry } from '../src/shared/types';
+
+export * from '../src/shared/types';
 
 export const PROPERTIES_FILE = 'data/properties.json';
 export const HISTORY_FILE = 'data/property_history.json';
 
-export interface Property {
-    id: string;
-    name: string;
-    url: string;
+/**
+ * JSTの日時を取得
+ */
+export function getJstNow(): Date {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * 9));
 }
 
-export interface MoveInBreakdown {
-    [key: string]: number;
+/**
+ * 日付を YYYY-MM-DD 形式でフォーマット
+ */
+export function formatDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
-export interface PropertyData {
-    id: string;
-    name: string;
-    url: string;
-    count: number;
-    moveInBreakdown: MoveInBreakdown;
-    success: boolean;
-    error?: string;
-}
-
-export interface HistoryEntry {
-    timestamp: string;
-    date: string;
-    time: string;
-    properties: PropertyData[];
+/**
+ * 時刻を HH:mm:ss 形式でフォーマット
+ */
+export function formatTime(date: Date): string {
+    const h = String(date.getHours()).padStart(2, '0');
+    const m = String(date.getMinutes()).padStart(2, '0');
+    const s = String(date.getSeconds()).padStart(2, '0');
+    return `${h}:${m}:${s}`;
 }
 
 export function loadProperties(): Property[] {
