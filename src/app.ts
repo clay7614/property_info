@@ -1,15 +1,49 @@
+/**
+ * SUUMO 物件情報トラッカー - フロントエンド
+ */
+
+// 型定義
+interface MoveInBreakdown {
+    [key: string]: number;
+}
+
+interface PropertyData {
+    id: string;
+    name: string;
+    url: string;
+    count: number;
+    moveInBreakdown: MoveInBreakdown;
+    success: boolean;
+    error?: string;
+}
+
+interface HistoryEntry {
+    timestamp: string;
+    date: string;
+    time: string;
+    properties: PropertyData[];
+}
+
+interface ChangeInfo {
+    changes: string[];
+    hasMarch2026Change: boolean;
+}
+
+// Chart.js のグローバル宣言
+declare const Chart: any;
+
 // サーバーデータのURL
 const SERVER_DATA_URL = 'data/property_history.json';
 
 // グラフのインスタンス
-let propertyChart = null;
-let moveInChart = null;
+let propertyChart: any = null;
+let moveInChart: any = null;
 
 // データキャッシュ
-let cachedHistory = [];
+let cachedHistory: HistoryEntry[] = [];
 
 // 前回の表示データ（変更検知用）
-let previousData = null;
+let previousData: PropertyData[] | null = null;
 
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,18 +55,19 @@ async function initializeApp() {
     initTheme();
     
     // イベントリスナーの設定
-    document.getElementById('refreshBtn').addEventListener('click', loadData);
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    document.getElementById('clearBtn').addEventListener('click', clearLocalData);
-    document.getElementById('historyBtn').addEventListener('click', showHistoryManager);
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('refreshBtn')?.addEventListener('click', loadData);
+    document.getElementById('exportBtn')?.addEventListener('click', exportData);
+    document.getElementById('clearBtn')?.addEventListener('click', clearLocalData);
+    document.getElementById('historyBtn')?.addEventListener('click', showHistoryManager);
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
     
     // グラフ範囲ボタンのイベント
     document.querySelectorAll('.chart-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
             document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            updateCharts(e.target.dataset.range);
+            target.classList.add('active');
+            updateCharts(target.dataset.range || '7');
         });
     });
     
@@ -59,18 +94,20 @@ function toggleTheme() {
     
     // グラフを再描画（テーマ変更時に色を更新するため）
     if (cachedHistory.length > 0) {
-        const activeRange = document.querySelector('.chart-btn.active')?.dataset.range || '7';
+        const activeRange = (document.querySelector('.chart-btn.active') as HTMLElement)?.dataset.range || '7';
         updateCharts(activeRange);
     }
 }
 
-function updateThemeIcon(theme) {
+function updateThemeIcon(theme: string) {
     const btn = document.getElementById('themeToggle');
-    btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    if (btn) {
+        btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    }
 }
 
 // 前回のデータを保存・読み込み
-function savePreviousData(data) {
+function savePreviousData(data: PropertyData[]) {
     localStorage.setItem('previousPropertyData', JSON.stringify(data));
 }
 
@@ -82,14 +119,14 @@ function loadPreviousData() {
 }
 
 // 変更を検出
-function detectChanges(currentProperties) {
+function detectChanges(currentProperties: PropertyData[]): ChangeInfo | null {
     if (!previousData) return null;
     
-    const changes = [];
+    const changes: string[] = [];
     let hasMarch2026Change = false;
     
     currentProperties.forEach(current => {
-        const prev = previousData.find(p => p.id === current.id);
+        const prev = previousData?.find(p => p.id === current.id);
         if (!prev) return;
         
         // 物件数の変化
@@ -125,10 +162,12 @@ function detectChanges(currentProperties) {
 }
 
 // アラートを表示
-function showChangeAlert(changeInfo) {
+function showChangeAlert(changeInfo: ChangeInfo) {
     const alertEl = document.getElementById('changeAlert');
     const messageEl = document.getElementById('alertMessage');
     
+    if (!alertEl || !messageEl) return;
+
     if (changeInfo.hasMarch2026Change) {
         alertEl.classList.add('highlight-march');
     } else {
@@ -141,17 +180,22 @@ function showChangeAlert(changeInfo) {
 
 // アラートを閉じる
 function dismissAlert() {
-    document.getElementById('changeAlert').style.display = 'none';
+    const alertEl = document.getElementById('changeAlert');
+    if (alertEl) alertEl.style.display = 'none';
 }
 
 // サーバーからデータを読み込み
 async function loadData() {
-    const refreshBtn = document.getElementById('refreshBtn');
-    refreshBtn.disabled = true;
-    refreshBtn.textContent = '読み込み中...';
+    const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement;
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '読み込み中...';
+    }
     
     const propertiesGrid = document.getElementById('propertiesGrid');
-    propertiesGrid.innerHTML = '<div class="loading">データを読み込み中...</div>';
+    if (propertiesGrid) {
+        propertiesGrid.innerHTML = '<div class="loading">データを読み込み中...</div>';
+    }
     
     try {
         const response = await fetch(SERVER_DATA_URL + '?t=' + Date.now());
@@ -163,7 +207,9 @@ async function loadData() {
         cachedHistory = await response.json();
         
         if (cachedHistory.length === 0) {
-            propertiesGrid.innerHTML = '<div class="error">データがありません。GitHub Actionsでデータが取得されるまでお待ちください。</div>';
+            if (propertiesGrid) {
+                propertiesGrid.innerHTML = '<div class="error">データがありません。GitHub Actionsでデータが取得されるまでお待ちください。</div>';
+            }
             return;
         }
         
@@ -186,28 +232,35 @@ async function loadData() {
         
         // 最終更新時間を表示
         const lastUpdate = new Date(latestEntry.timestamp);
-        document.getElementById('lastUpdated').textContent = 
-            `最終データ取得: ${lastUpdate.toLocaleString('ja-JP')}`;
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        if (lastUpdatedEl) {
+            lastUpdatedEl.textContent = `最終データ取得: ${lastUpdate.toLocaleString('ja-JP')}`;
+        }
         
         console.log(`Loaded ${cachedHistory.length} entries from server`);
         
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error loading data:', error);
-        propertiesGrid.innerHTML = `
-            <div class="error">
-                データの読み込みに失敗しました。<br>
-                <small>${error.message}</small>
-            </div>
-        `;
+        if (propertiesGrid) {
+            propertiesGrid.innerHTML = `
+                <div class="error">
+                    データの読み込みに失敗しました。<br>
+                    <small>${error.message}</small>
+                </div>
+            `;
+        }
     } finally {
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = 'データ再読み込み';
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = 'データ再読み込み';
+        }
     }
 }
 
 // 物件情報を表示
-function displayProperties(properties) {
+function displayProperties(properties: PropertyData[]) {
     const grid = document.getElementById('propertiesGrid');
+    if (!grid) return;
     
     const cards = properties.map(property => {
         const moveInHtml = formatMoveInBreakdown(property.moveInBreakdown);
@@ -241,12 +294,12 @@ function displayProperties(properties) {
 }
 
 // 26年3月かどうかを判定
-function isMarch2026(dateStr) {
+function isMarch2026(dateStr: string) {
     return dateStr.includes('26年3月') || dateStr.includes("'26年3月");
 }
 
 // 入居時期の内訳をHTMLにフォーマット
-function formatMoveInBreakdown(breakdown) {
+function formatMoveInBreakdown(breakdown: MoveInBreakdown) {
     if (!breakdown || Object.keys(breakdown).length === 0) {
         return '<span class="move-in-tag">情報なし</span>';
     }
@@ -272,10 +325,11 @@ function formatMoveInBreakdown(breakdown) {
 }
 
 // サマリーを更新
-function updateSummary(properties) {
+function updateSummary(properties: PropertyData[]) {
     // 総物件数
     const total = properties.reduce((sum, p) => sum + (p.count || 0), 0);
-    document.getElementById('totalProperties').textContent = total;
+    const totalEl = document.getElementById('totalProperties');
+    if (totalEl) totalEl.textContent = total.toString();
     
     // 26年3月入居の数
     const march2026 = properties.reduce((sum, p) => {
@@ -288,23 +342,26 @@ function updateSummary(properties) {
         });
         return sum + count;
     }, 0);
-    document.getElementById('marchCount').textContent = march2026;
+    const marchEl = document.getElementById('marchCount');
+    if (marchEl) marchEl.textContent = march2026.toString();
     
     // 即入居可の数
     const immediate = properties.reduce((sum, p) => {
         return sum + (p.moveInBreakdown?.['即入居可'] || 0);
     }, 0);
-    document.getElementById('immediateCount').textContent = immediate;
+    const immediateEl = document.getElementById('immediateCount');
+    if (immediateEl) immediateEl.textContent = immediate.toString();
     
     // 相談の数
     const consult = properties.reduce((sum, p) => {
         return sum + (p.moveInBreakdown?.['相談'] || 0);
     }, 0);
-    document.getElementById('consultCount').textContent = consult;
+    const consultEl = document.getElementById('consultCount');
+    if (consultEl) consultEl.textContent = consult.toString();
 }
 
 // グラフを更新
-function updateCharts(range) {
+function updateCharts(range: string) {
     let filteredHistory = cachedHistory;
     
     if (range !== 'all') {
@@ -319,8 +376,11 @@ function updateCharts(range) {
 }
 
 // 物件数推移グラフを更新
-function updatePropertyChart(history) {
-    const ctx = document.getElementById('propertyChart').getContext('2d');
+function updatePropertyChart(history: HistoryEntry[]) {
+    const canvas = document.getElementById('propertyChart') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
     if (propertyChart) {
         propertyChart.destroy();
@@ -431,8 +491,11 @@ function updatePropertyChart(history) {
 }
 
 // 入居時期グラフを更新（すべての入居時期を表示）
-function updateMoveInChart(history) {
-    const ctx = document.getElementById('moveInChart').getContext('2d');
+function updateMoveInChart(history: HistoryEntry[]) {
+    const canvas = document.getElementById('moveInChart') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
     if (moveInChart) {
         moveInChart.destroy();
@@ -462,7 +525,7 @@ function updateMoveInChart(history) {
     });
     
     // すべての入居時期カテゴリを収集
-    const allCategories = new Set();
+    const allCategories = new Set<string>();
     history.forEach(h => {
         h.properties.forEach(p => {
             if (p.moveInBreakdown) {
@@ -481,7 +544,7 @@ function updateMoveInChart(history) {
     });
     
     // カテゴリごとの色を定義
-    const categoryColors = {
+    const categoryColors: {[key: string]: string} = {
         '即入居可': 'rgba(34, 197, 94, 0.7)',
         '相談': 'rgba(245, 158, 11, 0.7)'
     };
@@ -502,7 +565,7 @@ function updateMoveInChart(history) {
         'rgba(74, 222, 128, 0.7)'    // 12月 - エメラルド
     ];
     
-    function getColorForCategory(category) {
+    function getColorForCategory(category: string) {
         if (categoryColors[category]) {
             return categoryColors[category];
         }
@@ -601,6 +664,8 @@ function showHistoryManager() {
     const modal = document.getElementById('historyModal');
     const historyList = document.getElementById('historyList');
     
+    if (!modal || !historyList) return;
+
     if (cachedHistory.length === 0) {
         historyList.innerHTML = '<p>履歴データがありません。</p>';
     } else {
@@ -625,12 +690,13 @@ function showHistoryManager() {
 
 // 履歴管理モーダルを閉じる
 function closeHistoryModal() {
-    document.getElementById('historyModal').style.display = 'none';
+    const modal = document.getElementById('historyModal');
+    if (modal) modal.style.display = 'none';
 }
 
 // 選択した履歴を削除
 function deleteSelectedHistory() {
-    const checkboxes = document.querySelectorAll('#historyList input[type="checkbox"]:checked');
+    const checkboxes = document.querySelectorAll('#historyList input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
     
     if (checkboxes.length === 0) {
         alert('削除する項目を選択してください。');
@@ -643,7 +709,7 @@ function deleteSelectedHistory() {
     
     // インデックスを降順でソート（後ろから削除するため）
     const indices = Array.from(checkboxes)
-        .map(cb => parseInt(cb.dataset.index, 10))
+        .map(cb => parseInt(cb.dataset.index || '0', 10))
         .sort((a, b) => b - a);
     
     indices.forEach(index => {
@@ -656,11 +722,15 @@ function deleteSelectedHistory() {
         displayProperties(latestEntry.properties);
         updateSummary(latestEntry.properties);
         const lastUpdate = new Date(latestEntry.timestamp);
-        document.getElementById('lastUpdated').textContent = 
-            `最終データ取得: ${lastUpdate.toLocaleString('ja-JP')}`;
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        if (lastUpdatedEl) {
+            lastUpdatedEl.textContent = `最終データ取得: ${lastUpdate.toLocaleString('ja-JP')}`;
+        }
     } else {
-        document.getElementById('propertiesGrid').innerHTML = '<div class="error">データがありません。</div>';
-        document.getElementById('lastUpdated').textContent = '最終データ取得: --';
+        const grid = document.getElementById('propertiesGrid');
+        if (grid) grid.innerHTML = '<div class="error">データがありません。</div>';
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        if (lastUpdatedEl) lastUpdatedEl.textContent = '最終データ取得: --';
     }
     
     updateCharts('7');
@@ -669,6 +739,6 @@ function deleteSelectedHistory() {
 }
 
 // グローバルに公開する関数（HTML onclick用）
-window.closeHistoryModal = closeHistoryModal;
-window.deleteSelectedHistory = deleteSelectedHistory;
-window.dismissAlert = dismissAlert;
+(window as any).closeHistoryModal = closeHistoryModal;
+(window as any).deleteSelectedHistory = deleteSelectedHistory;
+(window as any).dismissAlert = dismissAlert;
