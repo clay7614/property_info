@@ -9,6 +9,7 @@ on:
       - 'scripts/**'
       - '.github/workflows/**'
       - 'README.md'
+  workflow_dispatch:
 
 permissions:
   contents: read
