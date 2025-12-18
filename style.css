@@ -460,23 +460,21 @@ section h2 {
     padding: 10px 24px;
     border-radius: var(--md-sys-shape-corner-full);
     border: 1px solid var(--md-sys-color-outline);
-    background: transparent;
-    color: var(--md-sys-color-on-surface-variant);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .chart-btn:hover {
-    background-color: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-surface-container-highest);
 }
 
 .chart-btn.active {
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
     border-color: var(--md-sys-color-primary);
-    box-shadow: var(--md-sys-elevation-1);
 }
 
 .chart-container {
