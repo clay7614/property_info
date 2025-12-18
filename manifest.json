@@ -1,0 +1,17 @@
+{
+  "name": "弁天町物件トラッカー",
+  "short_name": "物件トラッカー",
+  "description": "SUUMOの物件情報を追跡・可視化するツール",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FEF7FF",
+  "theme_color": "#6750A4",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

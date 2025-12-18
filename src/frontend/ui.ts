@@ -27,6 +27,7 @@ export function displayProperties(properties: PropertyData[]) {
                 </div>
                 <div class="card-actions">
                     <a href="${url}" target="_blank" rel="noopener noreferrer" class="property-link">
+                        <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 8px;">open_in_new</span>
                         詳細を見る
                     </a>
                 </div>
