@@ -1,4 +1,5 @@
 import { chromium, Page } from 'playwright';
+import process from 'node:process';
 import { loadProperties, loadHistory, saveHistory, Property, PropertyData, MoveInBreakdown } from './common';
 
 // JSTの日時を取得
@@ -73,12 +74,8 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
         // 「もっと見る」を全て展開
         const clickedButtons = new Set<string>();
         while (clickedButtons.size < 20) {
-            // ボタンが表示されるまで少し待つ必要はあるかもしれないが、waitForSelector等はコストが高いので
-            // querySelectorAllで探して、あれば押すスタイル。
-            // 変化がなくなるまで待つ、というロジックの方が良いが、簡易的に実装。
-
-            // 少しだけ待機してDOM更新を待つ（これは動的な読み込み待ち）
-            await page.waitForTimeout(500);
+            // 少しだけ待機してDOM更新を待つ
+            await page.waitForTimeout(200);
 
             const moreButtons = await page.$$('a:has-text("もっと見る")');
             let clicked = false;
@@ -94,7 +91,7 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
                                 await btn.click();
                                 clickedButtons.add(btnId);
                                 clicked = true;
-                                await page.waitForTimeout(300); // クリック後のロード待ちを短縮
+                                await page.waitForTimeout(200); // クリック後のロード待ちを短縮
                                 break; 
                             } catch (e) {
                                 continue;
@@ -110,7 +107,7 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
         }
 
         // 最終的なレンダリング待ちを短縮
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
         const html = await page.content();
         const moveInBreakdown = parseMoveInDates(html);
 
