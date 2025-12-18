@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:frontend": "tsc -p tsconfig.frontend.json",
+    "build:frontend": "esbuild src/app.ts --bundle --outfile=dist/app.js --minify",
     "build": "npm run build:frontend"
   },
   "repository": {
@@ -25,6 +25,7 @@
     "@types/nodemailer": "^7.0.4",
     "axios": "^1.6.7",
     "cheerio": "^1.0.0-rc.12",
+    "esbuild": "^0.20.1",
     "nodemailer": "^7.0.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
