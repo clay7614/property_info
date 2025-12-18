@@ -99,7 +99,7 @@ body {
 }
 
 /* 共通コンポーネントベース */
-.chart-btn, .data-btn, .property-link, .fab, .modal-close, .alert-close {
+.chart-btn, .data-btn, .property-link, .modal-close, .alert-close {
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
@@ -511,35 +511,6 @@ section h2 {
 #refreshBtn {
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
-}
-
-/* FAB (Floating Action Button) */
-.fab {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    width: 56px;
-    height: 56px;
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    border-radius: var(--md-sys-shape-corner-large);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--md-sys-elevation-3);
-    border: none;
-    z-index: 100;
-}
-
-.fab .material-symbols-outlined {
-    font-size: 24px;
-}
-
-.fab:hover {
-    transform: scale(1.1) rotate(15deg);
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-    box-shadow: var(--md-sys-elevation-4);
 }
 
 /* モーダル (M3 Dialog) */
