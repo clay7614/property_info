@@ -778,26 +778,9 @@ footer p {
 }
 
 .move-in-tag.march-2026 {
-    background-color: #fae8ff;
-    border-color: #d946ef;
-    color: #a21caf;
-    font-weight: 600;
-    animation: pulse-highlight 2s ease-in-out infinite;
-}
-
-[data-theme="dark"] .move-in-tag.march-2026 {
-    background-color: #581c87;
-    border-color: #d946ef;
-    color: #f5d0fe;
-}
-
-@keyframes pulse-highlight {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(217, 70, 239, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 4px rgba(217, 70, 239, 0.2);
-    }
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-color: var(--md-sys-color-tertiary);
 }
 
 .property-link {
@@ -832,22 +815,17 @@ footer p {
 }
 
 .summary-card:nth-child(2) {
-    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    /* 旧スタイルの残骸を削除 */
 }
 
 .summary-card.highlight {
-    background: linear-gradient(135deg, #d946ef 0%, #a855f7 100%);
-    animation: pulse-card 2s ease-in-out infinite;
-    box-shadow: 0 4px 20px rgba(217, 70, 239, 0.4);
-}
-
-@keyframes pulse-card {
-    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(217, 70, 239, 0.4); }
-    50% { transform: scale(1.02); box-shadow: 0 6px 25px rgba(217, 70, 239, 0.6); }
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
 }
 
 .summary-card:nth-child(3) {
-    background: linear-gradient(135deg, var(--warning-color) 0%, #fbbf24 100%);
+    /* 旧スタイルの残骸を削除 */
 }
 
 .summary-label {
