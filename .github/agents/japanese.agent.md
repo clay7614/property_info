@@ -4,7 +4,7 @@
 
 ## プロジェクト概要
 
-- **技術スタック**: HTML5, CSS3, Vanilla JavaScript, Chart.js, Python (Playwright)
+- **技術スタック**: HTML5, CSS3, Vanilla JavaScript, Chart.js, Node.js (Axios, Cheerio)
 - **デプロイ**: GitHub Pages
 - **CI/CD**: GitHub Actions
 - **対象ブラウザ**: モダンブラウザ（Chrome, Firefox, Safari, Edge）

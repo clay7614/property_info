@@ -1,4 +1,5 @@
-import { chromium, Page } from 'playwright';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 import process from 'node:process';
 import { loadProperties, loadHistory, saveHistory, Property, PropertyData, MoveInBreakdown } from './common';
 
@@ -25,12 +26,10 @@ function formatTime(date: Date): string {
 
 function parseMoveInDates(html: string): MoveInBreakdown {
     const breakdown: MoveInBreakdown = {};
-    const tdRegex = /<td[^>]*>(.*?)<\/td>/gi;
-    let match;
-
-    while ((match = tdRegex.exec(html)) !== null) {
-        let text = match[1].replace(/<[^>]+>/g, '').trim();
-        text = text.replace(/\s+/g, '');
+    const $ = cheerio.load(html);
+    
+    $('td').each((_, el) => {
+        let text = $(el).text().replace(/\s+/g, '').trim();
 
         if (['即入居可', '即'].includes(text)) {
             breakdown['即入居可'] = (breakdown['即入居可'] || 0) + 1;
@@ -45,80 +44,35 @@ function parseMoveInDates(html: string): MoveInBreakdown {
                 breakdown[key] = (breakdown[key] || 0) + 1;
             }
         }
-    }
+    });
+    
     return breakdown;
 }
 
-async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount: number = 0): Promise<PropertyData> {
+async function fetchPropertyData(propertyInfo: Property): Promise<PropertyData> {
     console.log(`取得中: ${propertyInfo.name}`);
 
     try {
-        // domcontentloadedを待たずに、必要な要素が出るまで待つ
-        await page.goto(propertyInfo.url, { waitUntil: 'commit', timeout: 60000 });
+        const response = await axios.get(propertyInfo.url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            },
+            timeout: 30000
+        });
 
-        // 物件数表示か、あるいはリストが表示されるのを待つ
-        try {
-            await page.waitForSelector('span.fgOrange.bld', { timeout: 15000 });
-        } catch (e) {
-            // 無視
-        }
-
+        const $ = cheerio.load(response.data);
+        
         // 物件数を取得
         let count = 0;
-        const countElem = await page.$('span.fgOrange.bld');
-        if (countElem) {
-            const countText = await countElem.innerText();
-            count = parseInt(countText.trim(), 10);
+        const countText = $('span.fgOrange.bld').first().text().trim();
+        if (countText) {
+            count = parseInt(countText, 10);
         }
 
-        // 「もっと見る」を全て展開
-        const clickedButtons = new Set<string>();
-        while (clickedButtons.size < 20) {
-            // 少しだけ待機してDOM更新を待つ
-            await page.waitForTimeout(200);
-
-            const moreButtons = await page.$$('a:has-text("もっと見る")');
-            let clicked = false;
-
-            for (const btn of moreButtons) {
-                if (await btn.isVisible()) {
-                    const box = await btn.boundingBox();
-                    if (box) {
-                        const btnId = `${Math.round(box.x)},${Math.round(box.y)}`;
-                        if (!clickedButtons.has(btnId)) {
-                            try {
-                                await btn.scrollIntoViewIfNeeded();
-                                await btn.click();
-                                clickedButtons.add(btnId);
-                                clicked = true;
-                                await page.waitForTimeout(200); // クリック後のロード待ちを短縮
-                                break; 
-                            } catch (e) {
-                                continue;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!clicked) {
-                break;
-            }
-        }
-
-        // 最終的なレンダリング待ちを短縮
-        await page.waitForTimeout(300);
-        const html = await page.content();
-        const moveInBreakdown = parseMoveInDates(html);
-
+        const moveInBreakdown = parseMoveInDates(response.data);
         const totalMoveIn = Object.values(moveInBreakdown).reduce((a, b) => a + b, 0);
+        
         console.log(`  ${propertyInfo.name}: 物件数 ${count}, 入居時期データ ${totalMoveIn}`);
-
-        // 物件数が0件で、まだ再試行していない場合は再取得
-        if (count === 0 && retryCount === 0) {
-            console.log(`  ${propertyInfo.name}: 0件のため再試行します`);
-            return await fetchPropertyData(page, propertyInfo, 1);
-        }
 
         return {
             id: propertyInfo.id,
@@ -145,7 +99,7 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
 
 async function main() {
     const jstNow = getJstNow();
-    console.log(`開始: ${formatDate(jstNow)} ${formatTime(jstNow)} JST`);
+    console.log(`開始: ${formatDate(jstNow)} ${formatTime(jstNow)} JST (Cheerio版)`);
 
     const properties = loadProperties();
     if (properties.length === 0) {
@@ -153,48 +107,22 @@ async function main() {
         process.exit(1);
     }
 
-    const browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    });
-
-    const context = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        viewport: { width: 1920, height: 1080 }
-    });
-
-    const propertiesData: PropertyData[] = await Promise.all(
-        properties.map(async (prop) => {
-            const page = await context.newPage();
-            try {
-                return await fetchPropertyData(page, prop);
-            } finally {
-                await page.close();
-            }
-        })
+    const results: PropertyData[] = await Promise.all(
+        properties.map(p => fetchPropertyData(p))
     );
 
-    await browser.close();
-
-    const successful = propertiesData.filter(p => p.success);
+    const successful = results.filter(p => p.success);
 
     if (successful.length > 0) {
         const now = getJstNow();
         const entry = {
-            timestamp: now.toISOString(), // ISO形式はUTCになるが、JST日時を保持したい場合は手動フォーマットの方がいいかも？
-            // Python版: 'timestamp': now.isoformat() (JSTのaware objectなら+09:00がつく)
-            // ここではシンプルにISO文字列（UTC）にしておくか、あるいはローカル時間文字列表現にするか。
-            // 既存データと互換性を保つにはPythonのisoformat()に合わせる。
-            // Python: 2024-05-20T10:00:00+09:00
-            // JS toISOString: 2024-05-20T01:00:00.000Z
-            // 既存データを確認していないが、JSTの時間を保持したいならオフセット付き文字列を作るのがベスト。
-            // 面倒なので、dateとtimeフィールドを信頼することにして、timestampはUTC ISOで保存する。
+            timestamp: '',
             date: formatDate(now),
             time: formatTime(now),
-            properties: propertiesData
+            properties: results
         };
 
-        // timestampの上書き（JSTオフセット付きにする）
+        // timestampの設定（JSTオフセット付き）
         const tzOffset = '+09:00';
         entry.timestamp = `${entry.date}T${entry.time}${tzOffset}`;
 
@@ -219,3 +147,4 @@ main().catch(err => {
     console.error(err);
     process.exit(1);
 });
+
