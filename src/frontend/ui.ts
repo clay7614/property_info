@@ -16,19 +16,20 @@ export function displayProperties(properties: PropertyData[]) {
                 <h3 class="property-name">${property.name}</h3>
                 <div class="property-stats">
                     <div class="stat-row">
-                        <span class="stat-label">掲載中の物件数</span>
-                        <span class="stat-value">${property.count}件</span>
+                        <span class="stat-label">掲載物件数</span>
+                        <span class="stat-value">${property.count}</span>
                     </div>
                 </div>
                 <div class="move-in-breakdown">
-                    <h4>入居時期の内訳</h4>
                     <div class="move-in-list">
                         ${moveInHtml}
                     </div>
                 </div>
-                <a href="${url}" target="_blank" rel="noopener noreferrer" class="property-link">
-                    SUUMOで詳細を見る →
-                </a>
+                <div class="card-actions">
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="property-link">
+                        詳細を見る
+                    </a>
+                </div>
             </div>
         `;
     }).join('');

@@ -23,6 +23,6 @@ export function toggleTheme(onThemeChange?: (newTheme: string) => void) {
 function updateThemeIcon(theme: string) {
     const btn = document.getElementById('themeToggle');
     if (btn) {
-        btn.textContent = theme === 'dark' ? 'Light' : 'Dark';
+        btn.textContent = theme === 'dark' ? 'ライトモード' : 'ダークモード';
     }
 }

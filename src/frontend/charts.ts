@@ -8,7 +8,35 @@ declare const Chart: any;
 let propertyChart: any = null;
 let moveInChart: any = null;
 
+/**
+ * CSS変数から色を取得する
+ */
+function getM3Color(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function getChartColors() {
+    return {
+        primary: getM3Color('--md-sys-color-primary'),
+        secondary: getM3Color('--md-sys-color-secondary'),
+        tertiary: getM3Color('--md-sys-color-tertiary'),
+        error: getM3Color('--md-sys-color-error'),
+        outline: getM3Color('--md-sys-color-outline-variant'),
+        text: getM3Color('--md-sys-color-on-surface'),
+        textVariant: getM3Color('--md-sys-color-on-surface-variant'),
+    };
+}
+
 export function updateCharts(history: HistoryEntry[], range: string) {
+    const colors = getChartColors();
+    
+    // Chart.jsのグローバル設定をM3に合わせる
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = colors.textVariant;
+        Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
+        Chart.defaults.borderColor = colors.outline;
+    }
+
     let filteredHistory = history;
     
     if (range !== 'all') {
@@ -18,11 +46,11 @@ export function updateCharts(history: HistoryEntry[], range: string) {
         filteredHistory = history.filter(h => new Date(h.timestamp) >= cutoff);
     }
     
-    updatePropertyChart(filteredHistory);
-    updateMoveInChart(filteredHistory);
+    updatePropertyChart(filteredHistory, colors);
+    updateMoveInChart(filteredHistory, colors);
 }
 
-function updatePropertyChart(history: HistoryEntry[]) {
+function updatePropertyChart(history: HistoryEntry[], colors: any) {
     const canvas = document.getElementById('propertyChart') as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -40,8 +68,8 @@ function updatePropertyChart(history: HistoryEntry[]) {
                 datasets: [{
                     label: '物件数',
                     data: [0],
-                    borderColor: 'rgba(37, 99, 235, 0.5)',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '1A',
                 }]
             },
             options: {
@@ -60,17 +88,17 @@ function updatePropertyChart(history: HistoryEntry[]) {
     const latestEntry = history[history.length - 1];
     const properties = latestEntry.properties;
     
+    const palette = [
+        colors.primary,
+        colors.secondary,
+        colors.tertiary,
+        '#8B5CF6', // Violet
+        '#EC4899', // Pink
+        '#06B6D4', // Cyan
+    ];
+    
     const datasets: any[] = properties.map((property, index) => {
-        const colors = [
-            { border: 'rgb(37, 99, 235)', background: 'rgba(37, 99, 235, 0.1)' },
-            { border: 'rgb(34, 197, 94)', background: 'rgba(34, 197, 94, 0.1)' },
-            { border: 'rgb(245, 158, 11)', background: 'rgba(245, 158, 11, 0.1)' },
-            { border: 'rgb(239, 68, 68)', background: 'rgba(239, 68, 68, 0.1)' },
-            { border: 'rgb(168, 85, 247)', background: 'rgba(168, 85, 247, 0.1)' },
-            { border: 'rgb(236, 72, 153)', background: 'rgba(236, 72, 153, 0.1)' }
-        ];
-        
-        const colorIndex = index % colors.length;
+        const color = palette[index % palette.length];
         
         const data = history.map(h => {
             const p = h.properties.find(pr => pr.id === property.id);
@@ -80,10 +108,13 @@ function updatePropertyChart(history: HistoryEntry[]) {
         return {
             label: property.name,
             data: data,
-            borderColor: colors[colorIndex].border,
-            backgroundColor: colors[colorIndex].background,
+            borderColor: color,
+            backgroundColor: color + '1A',
             fill: true,
-            tension: 0.3
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 2
         };
     });
     
@@ -94,11 +125,13 @@ function updatePropertyChart(history: HistoryEntry[]) {
     datasets.push({
         label: '合計',
         data: totalData,
-        borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderColor: colors.text,
+        backgroundColor: 'transparent',
         fill: false,
         borderWidth: 3,
-        borderDash: [5, 5]
+        borderDash: [5, 5],
+        tension: 0.4,
+        pointRadius: 0
     });
     
     propertyChart = new Chart(ctx, {
@@ -108,13 +141,33 @@ function updatePropertyChart(history: HistoryEntry[]) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top' },
-                tooltip: { mode: 'index', intersect: false }
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 12, weight: '500' }
+                    }
+                },
+                tooltip: { 
+                    mode: 'index', 
+                    intersect: false,
+                    backgroundColor: colors.text,
+                    titleColor: getM3Color('--md-sys-color-surface'),
+                    bodyColor: getM3Color('--md-sys-color-surface'),
+                    padding: 12,
+                    cornerRadius: 8
+                }
             },
             scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
+                },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: '物件数' }
+                    grid: { color: colors.outline },
+                    ticks: { padding: 10 }
                 }
             },
             interaction: { mode: 'nearest', axis: 'x', intersect: false }
@@ -122,7 +175,7 @@ function updatePropertyChart(history: HistoryEntry[]) {
     });
 }
 
-function updateMoveInChart(history: HistoryEntry[]) {
+function updateMoveInChart(history: HistoryEntry[], colors: any) {
     const canvas = document.getElementById('moveInChart') as HTMLCanvasElement;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -166,29 +219,15 @@ function updateMoveInChart(history: HistoryEntry[]) {
         return a.localeCompare(b, 'ja');
     });
     
-    const categoryColors: {[key: string]: string} = {
-        '即入居可': 'rgba(34, 197, 94, 0.7)',
-        '相談': 'rgba(245, 158, 11, 0.7)'
-    };
-    
-    const monthColors = [
-        'rgba(59, 130, 246, 0.7)', 'rgba(236, 72, 153, 0.7)', 'rgba(168, 85, 247, 0.7)',
-        'rgba(20, 184, 166, 0.7)', 'rgba(132, 204, 22, 0.7)', 'rgba(251, 146, 60, 0.7)',
-        'rgba(239, 68, 68, 0.7)', 'rgba(34, 211, 238, 0.7)', 'rgba(163, 230, 53, 0.7)',
-        'rgba(251, 191, 36, 0.7)', 'rgba(192, 132, 252, 0.7)', 'rgba(74, 222, 128, 0.7)'
+    const palette = [
+        colors.primary,
+        colors.secondary,
+        colors.tertiary,
+        '#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'
     ];
     
-    function getColorForCategory(category: string) {
-        if (categoryColors[category]) return categoryColors[category];
-        const monthMatch = category.match(/(\d{1,2})月/);
-        if (monthMatch) {
-            const month = parseInt(monthMatch[1], 10);
-            return monthColors[(month - 1) % 12];
-        }
-        return 'rgba(100, 116, 139, 0.7)';
-    }
-    
-    const datasets: any[] = sortedCategories.map(category => {
+    const datasets: any[] = sortedCategories.map((category, index) => {
+        const color = palette[index % palette.length];
         const data = history.map(h => {
             let total = 0;
             h.properties.forEach(p => {
@@ -202,12 +241,13 @@ function updateMoveInChart(history: HistoryEntry[]) {
         return {
             label: category,
             data: data,
-            borderColor: getColorForCategory(category),
-            backgroundColor: getColorForCategory(category) + '33',
+            borderColor: color,
+            backgroundColor: color + '33',
             fill: false,
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 2
         };
     });
     
@@ -217,11 +257,37 @@ function updateMoveInChart(history: HistoryEntry[]) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' } },
+            plugins: { 
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 12, weight: '500' }
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: colors.text,
+                    titleColor: getM3Color('--md-sys-color-surface'),
+                    bodyColor: getM3Color('--md-sys-color-surface'),
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            },
             scales: {
-                x: { grid: { display: false } },
-                y: { beginAtZero: true, title: { display: true, text: '件数' } }
-            }
+                x: {
+                    grid: { display: false },
+                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: colors.outline },
+                    ticks: { padding: 10 }
+                }
+            },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false }
         }
     });
 }

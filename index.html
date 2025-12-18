@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUUMO 物件情報トラッカー</title>
+    <title>物件情報トラッカー</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>SUUMO 物件情報トラッカー</h1>
-            <p class="subtitle">弁天町エリアの賃貸物件をリアルタイムで監視</p>
-            <div class="last-updated">
-                <span id="lastUpdated">最終データ取得: --</span>
+        <header class="fade-in">
+            <div class="header-content">
+                <h1>弁天町物件トラッカー</h1>
+                <p class="subtitle">SUUMOの最新情報をリアルタイムで可視化</p>
+                <div class="last-updated">
+                    <span id="lastUpdated">最終データ取得: --</span>
+                </div>
             </div>
         </header>
 
         <main>
             <!-- 変更通知 -->
             <div id="changeAlert" class="change-alert" style="display: none;">
-                <div class="alert-icon">通知：</div>
+                <div class="alert-icon">【通知】</div>
                 <div class="alert-content">
                     <div class="alert-title">物件情報が更新されました</div>
                     <div class="alert-message" id="alertMessage"></div>
                 </div>
-                <button class="alert-close" onclick="dismissAlert()">&times;</button>
+                <button class="alert-close" onclick="dismissAlert()">×</button>
             </div>
 
             <!-- 物件カード一覧 -->
@@ -104,15 +106,20 @@
             </section>
         </main>
 
+        <!-- FAB (Floating Action Button) -->
+        <button class="fab" onclick="document.getElementById('refreshBtn').click()" title="データを更新">
+            <span>🔄</span>
+        </button>
+
         <!-- 履歴管理モーダル -->
         <div id="historyModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>履歴管理</h3>
+                    <h2>履歴管理</h2>
                     <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p class="modal-info">削除したい履歴を選択してください。<br><small>※ローカル表示のみ影響します。サーバーのJSONファイルは変更されません。</small></p>
+                    <p class="modal-info">削除したい履歴を選択してください。<br><small>※ローカル表示のみ影響します。</small></p>
                     <div id="historyList" class="history-list">
                         <!-- 履歴リストはJavaScriptで生成 -->
                     </div>
@@ -125,7 +132,7 @@
         </div>
 
         <footer>
-            <p>このサイトはSUUMOの物件情報を表示するための個人用ツールです。</p>
+            <p>SUUMO物件情報トラッカー</p>
             <p>データはSUUMO物件ライブラリーから取得しています。</p>
         </footer>
     </div>
