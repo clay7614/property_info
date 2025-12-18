@@ -38,7 +38,7 @@ jobs:
         run: npx playwright install chromium --with-deps
       
       - name: Fetch SUUMO data
-        run: npx tsx scripts/fetchSuumoData.ts
+        run: npx ts-node scripts/fetchSuumoData.ts
       
       - name: Check for changes
         id: check_changes
