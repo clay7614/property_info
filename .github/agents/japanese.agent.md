@@ -96,12 +96,19 @@ property_info/
 │   └── property_history.json   # 物件履歴データ
 ├── scripts/
 │   ├── addProperty.ts          # 物件追加スクリプト
-│   ├── common.ts               # 共通型定義・関数
+│   ├── common.ts               # 共通ユーティリティ（ファイルI/O、日付操作）
 │   ├── fetchSuumoData.ts       # スクレイピングスクリプト
 │   ├── removeProperty.ts       # 物件削除スクリプト
 │   └── sendEmailNotification.ts # メール通知スクリプト
 ├── src/
-│   └── app.ts                  # フロントエンドTypeScript
+│   ├── frontend/               # フロントエンドモジュール
+│   │   ├── charts.ts           # グラフ描画
+│   │   ├── data.ts             # データ取得・管理
+│   │   ├── theme.ts            # テーマ管理
+│   │   └── ui.ts               # UI操作・DOM操作
+│   ├── shared/                 # 共通定義
+│   │   └── types.ts            # 共通型定義（インターフェース）
+│   └── app.ts                  # フロントエンド・エントリポイント
 ├── index.html                  # メインHTML
 ├── style.css                   # スタイルシート
 ├── package.json                # プロジェクト設定
