@@ -86,16 +86,26 @@ git push
 property_info/
 ├── .github/
 │   ├── agents/
-│   │   └── claude.md           # このファイル
+│   │   └── japanese.agent.md   # このファイル
 │   └── workflows/
-│       ├── fetch-data.yml      # データ取得ワークフロー
-│       └── deploy-pages.yml    # GitHub Pagesデプロイ
+│       ├── add-property.yml    # 物件追加ワークフロー
+│       ├── fetch-data.yml      # データ取得・デプロイワークフロー
+│       └── remove-property.yml # 物件削除ワークフロー
 ├── data/
+│   ├── properties.json         # 追跡対象の物件リスト
 │   └── property_history.json   # 物件履歴データ
 ├── scripts/
-│   └── fetch_suumo_playwright.ts  # スクレイピングスクリプト
+│   ├── addProperty.ts          # 物件追加スクリプト
+│   ├── common.ts               # 共通型定義・関数
+│   ├── fetchSuumoData.ts       # スクレイピングスクリプト
+│   ├── removeProperty.ts       # 物件削除スクリプト
+│   └── sendEmailNotification.ts # メール通知スクリプト
+├── src/
+│   └── app.ts                  # フロントエンドTypeScript
 ├── index.html                  # メインHTML
-├── app.js                      # メインJavaScript
 ├── style.css                   # スタイルシート
+├── package.json                # プロジェクト設定
+├── tsconfig.json               # スクリプト用TS設定
+├── tsconfig.frontend.json      # フロントエンド用TS設定
 └── README.md                   # プロジェクト説明
 ```
