@@ -364,15 +364,14 @@ section h2 {
 }
 
 .property-link:hover {
-    background-color: var(--md-sys-color-primary);
-    filter: brightness(1.1);
-    box-shadow: var(--md-sys-elevation-3);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: var(--md-sys-elevation-2);
     transform: translateY(-1px);
 }
 
 .property-link:active {
     transform: translateY(0);
-    filter: brightness(0.9);
 }
 
 /* サマリーカード (M3 Tonal) */
@@ -395,6 +394,7 @@ section h2 {
 }
 
 .summary-card:hover {
+    transform: translateY(-4px);
     background-color: var(--md-sys-color-surface-container-highest);
     border-color: var(--md-sys-color-outline);
 }
@@ -402,11 +402,6 @@ section h2 {
 .summary-card.highlight {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
-    border-color: var(--md-sys-color-primary);
-}
-
-.summary-card.highlight:hover {
-    background-color: var(--md-sys-color-primary-container);
     border-color: var(--md-sys-color-primary);
 }
 
@@ -459,8 +454,8 @@ section h2 {
 .chart-btn {
     padding: 10px 24px;
     border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline);
-    background: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
     color: var(--md-sys-color-on-surface);
     font-weight: 600;
     cursor: pointer;
@@ -468,7 +463,8 @@ section h2 {
 }
 
 .chart-btn:hover {
-    background-color: var(--md-sys-color-surface-container-highest);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
 }
 
 .chart-btn.active {
