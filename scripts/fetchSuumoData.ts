@@ -52,27 +52,22 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
     console.log(`取得中: ${propertyInfo.name}`);
 
     try {
-        await page.goto(propertyInfo.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        // domcontentloadedを待たずに、必要な要素が出るまで待つ
+        await page.goto(propertyInfo.url, { waitUntil: 'commit', timeout: 60000 });
 
-        // 特定の要素を待つことで、固定待機を排除
         // 物件数表示か、あるいはリストが表示されるのを待つ
-        // 失敗してもエラーにせず進むようにtry-catchで囲むか、あるいは.catch(() => null)する
         try {
-            await page.waitForSelector('.property_view_note-list, span.fgOrange.bld', { timeout: 10000 });
+            await page.waitForSelector('span.fgOrange.bld', { timeout: 15000 });
         } catch (e) {
-            // 要素が見つからなくても、ページ自体はロードされているので続行
+            // 無視
         }
 
         // 物件数を取得
         let count = 0;
-        try {
-            const countElem = await page.$('span.fgOrange.bld');
-            if (countElem) {
-                const countText = await countElem.innerText();
-                count = parseInt(countText.trim(), 10);
-            }
-        } catch (e) {
-            // 無視
+        const countElem = await page.$('span.fgOrange.bld');
+        if (countElem) {
+            const countText = await countElem.innerText();
+            count = parseInt(countText.trim(), 10);
         }
 
         // 「もっと見る」を全て展開
@@ -99,8 +94,8 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
                                 await btn.click();
                                 clickedButtons.add(btnId);
                                 clicked = true;
-                                await page.waitForTimeout(1000); // クリック後のロード待ち
-                                break; // 1回クリックしたらDOMが変わる可能性があるのでループを抜けて再検索
+                                await page.waitForTimeout(300); // クリック後のロード待ちを短縮
+                                break; 
                             } catch (e) {
                                 continue;
                             }
@@ -114,18 +109,17 @@ async function fetchPropertyData(page: Page, propertyInfo: Property, retryCount:
             }
         }
 
-        // 最終的なレンダリングを少し待つ
-        await page.waitForTimeout(1000);
+        // 最終的なレンダリング待ちを短縮
+        await page.waitForTimeout(500);
         const html = await page.content();
         const moveInBreakdown = parseMoveInDates(html);
 
         const totalMoveIn = Object.values(moveInBreakdown).reduce((a, b) => a + b, 0);
-        console.log(`  物件数: ${count}, 入居時期データ: ${totalMoveIn}`);
+        console.log(`  ${propertyInfo.name}: 物件数 ${count}, 入居時期データ ${totalMoveIn}`);
 
         // 物件数が0件で、まだ再試行していない場合は再取得
         if (count === 0 && retryCount === 0) {
-            console.log(`  0件のため再試行します（5秒待機後）`);
-            await page.waitForTimeout(5000);
+            console.log(`  ${propertyInfo.name}: 0件のため再試行します`);
             return await fetchPropertyData(page, propertyInfo, 1);
         }
 
@@ -172,13 +166,16 @@ async function main() {
         viewport: { width: 1920, height: 1080 }
     });
 
-    const page = await context.newPage();
-    const propertiesData: PropertyData[] = [];
-
-    for (const prop of properties) {
-        const data = await fetchPropertyData(page, prop);
-        propertiesData.push(data);
-    }
+    const propertiesData: PropertyData[] = await Promise.all(
+        properties.map(async (prop) => {
+            const page = await context.newPage();
+            try {
+                return await fetchPropertyData(page, prop);
+            } finally {
+                await page.close();
+            }
+        })
+    );
 
     await browser.close();
 

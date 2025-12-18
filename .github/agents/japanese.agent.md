@@ -93,7 +93,7 @@ property_info/
 ├── data/
 │   └── property_history.json   # 物件履歴データ
 ├── scripts/
-│   └── fetch_suumo_playwright.py  # スクレイピングスクリプト
+│   └── fetch_suumo_playwright.ts  # スクレイピングスクリプト
 ├── index.html                  # メインHTML
 ├── app.js                      # メインJavaScript
 ├── style.css                   # スタイルシート
