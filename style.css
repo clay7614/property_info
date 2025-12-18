@@ -353,8 +353,8 @@ section h2 {
     align-items: center;
     justify-content: center;
     padding: 10px 24px;
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
     text-decoration: none;
     border-radius: var(--md-sys-shape-corner-full);
     font-weight: 700;
@@ -364,8 +364,8 @@ section h2 {
 }
 
 .property-link:hover {
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     box-shadow: var(--md-sys-elevation-2);
     transform: translateY(-1px);
 }
@@ -455,16 +455,16 @@ section h2 {
     padding: 10px 24px;
     border-radius: var(--md-sys-shape-corner-full);
     border: 1px solid var(--md-sys-color-outline-variant);
-    background-color: var(--md-sys-color-surface-container-low);
-    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .chart-btn:hover {
-    background-color: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
 }
 
 .chart-btn.active {
