@@ -415,7 +415,7 @@ function updatePropertyChart(history: HistoryEntry[]) {
     const latestEntry = history[history.length - 1];
     const properties = latestEntry.properties;
     
-    const datasets = properties.map((property, index) => {
+    const datasets: any[] = properties.map((property, index) => {
         const colors = [
             { border: 'rgb(37, 99, 235)', background: 'rgba(37, 99, 235, 0.1)' },
             { border: 'rgb(34, 197, 94)', background: 'rgba(34, 197, 94, 0.1)' },
@@ -578,7 +578,7 @@ function updateMoveInChart(history: HistoryEntry[]) {
         return 'rgba(100, 116, 139, 0.7)';
     }
     
-    const datasets = sortedCategories.map(category => {
+    const datasets: any[] = sortedCategories.map(category => {
         const data = history.map(h => {
             let total = 0;
             h.properties.forEach(p => {
