@@ -78,18 +78,18 @@
     --md-sys-color-on-error: #690005;
     --md-sys-color-error-container: #93000A;
     --md-sys-color-on-error-container: #FFDAD6;
-    --md-sys-color-background: #1B1B1F;
-    --md-sys-color-on-background: #E3E2E6;
-    --md-sys-color-surface: #1B1B1F;
-    --md-sys-color-on-surface: #E3E2E6;
+    --md-sys-color-background: #111318;
+    --md-sys-color-on-background: #E2E2E9;
+    --md-sys-color-surface: #111318;
+    --md-sys-color-on-surface: #E2E2E9;
     --md-sys-color-surface-variant: #44474F;
     --md-sys-color-on-surface-variant: #C4C6D0;
     --md-sys-color-outline: #8E9099;
-    --md-sys-color-surface-container-lowest: #0F0F12;
-    --md-sys-color-surface-container-low: #1D1D21;
-    --md-sys-color-surface-container: #212126;
-    --md-sys-color-surface-container-high: #2B2B30;
-    --md-sys-color-surface-container-highest: #36363B;
+    --md-sys-color-surface-container-lowest: #0B0E13;
+    --md-sys-color-surface-container-low: #191C22;
+    --md-sys-color-surface-container: #1D2026;
+    --md-sys-color-surface-container-high: #282A31;
+    --md-sys-color-surface-container-highest: #33353C;
 }
 
 body {
@@ -364,7 +364,8 @@ section h2 {
 }
 
 .property-link:hover {
-    background-color: var(--md-sys-color-primary-fixed-dim);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
     box-shadow: var(--md-sys-elevation-2);
     transform: translateY(-1px);
 }
@@ -381,33 +382,44 @@ section h2 {
 }
 
 .summary-card {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
     padding: 24px;
     border-radius: var(--md-sys-shape-corner-large);
     display: flex;
     align-items: center;
     gap: 20px;
-    transition: transform 0.2s;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .summary-card:hover {
     transform: translateY(-4px);
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-color: var(--md-sys-color-outline);
 }
 
 .summary-card.highlight {
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
 }
 
 .summary-icon {
     width: 56px;
     height: 56px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--md-sys-color-surface-container-lowest);
+    color: var(--md-sys-color-primary);
     border-radius: var(--md-sys-shape-corner-medium);
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: var(--md-sys-elevation-1);
+}
+
+.summary-card.highlight .summary-icon {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
 }
 
 .summary-icon .material-symbols-outlined {
@@ -422,13 +434,14 @@ section h2 {
     font-size: 0.875rem;
     font-weight: 600;
     margin-bottom: 4px;
-    opacity: 0.8;
+    color: var(--md-sys-color-on-surface-variant);
 }
 
 .summary-value {
     font-size: 2rem;
     font-weight: 800;
     line-height: 1.2;
+    color: var(--md-sys-color-on-surface);
 }
 
 /* グラフセクション */
@@ -443,16 +456,21 @@ section h2 {
     border-radius: var(--md-sys-shape-corner-full);
     border: 1px solid var(--md-sys-color-outline);
     background: transparent;
-    color: var(--md-sys-color-on-surface);
+    color: var(--md-sys-color-on-surface-variant);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
+.chart-btn:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+}
+
 .chart-btn.active {
-    background-color: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    border-color: transparent;
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: var(--md-sys-color-primary);
 }
 
 .chart-container {
