@@ -39,51 +39,76 @@ function parseMoveInDates(html: string): MoveInBreakdown {
 }
 
 async function fetchPropertyData(propertyInfo: Property): Promise<PropertyData> {
-    console.log(`取得中: ${propertyInfo.name}`);
+    const maxRetries = 3;
+    let lastError: any = null;
 
-    try {
-        const response = await axios.get(propertyInfo.url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            },
-            timeout: 30000
-        });
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`取得中: ${propertyInfo.name} (試行 ${attempt}/${maxRetries})`);
 
-        const $ = cheerio.load(response.data);
-        
-        // 物件数を取得
-        let count = 0;
-        const countText = $('span.fgOrange.bld').first().text().trim();
-        if (countText) {
-            count = parseInt(countText, 10);
+        try {
+            const response = await axios.get(propertyInfo.url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                },
+                timeout: 30000
+            });
+
+            const $ = cheerio.load(response.data);
+            
+            // 物件数を取得 (複数のセレクタを試行)
+            let count = 0;
+            const selectors = ['span.fgOrange.bld', 'div.pagination_set-left > span.fgOrange', 'div.pagination_set-left > b'];
+            
+            for (const selector of selectors) {
+                const countText = $(selector).first().text().trim();
+                if (countText) {
+                    count = parseInt(countText, 10);
+                    if (!isNaN(count) && count > 0) break;
+                }
+            }
+
+            // 物件数が0件の場合、一時的なエラーの可能性があるためリトライ
+            if (count === 0 && attempt < maxRetries) {
+                console.warn(`  警告: ${propertyInfo.name} の物件数が0件です。リトライします...`);
+                await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+                continue;
+            }
+
+            const moveInBreakdown = parseMoveInDates(response.data);
+            const totalMoveIn = Object.values(moveInBreakdown).reduce((a, b) => a + b, 0);
+            
+            console.log(`  ${propertyInfo.name}: 物件数 ${count}, 入居時期データ ${totalMoveIn}`);
+
+            return {
+                id: propertyInfo.id,
+                name: propertyInfo.name,
+                url: propertyInfo.url,
+                count: count,
+                moveInBreakdown: moveInBreakdown,
+                success: true
+            };
+
+        } catch (e) {
+            lastError = e;
+            console.error(`  試行 ${attempt} エラー: ${e}`);
+            if (attempt < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+            }
         }
-
-        const moveInBreakdown = parseMoveInDates(response.data);
-        const totalMoveIn = Object.values(moveInBreakdown).reduce((a, b) => a + b, 0);
-        
-        console.log(`  ${propertyInfo.name}: 物件数 ${count}, 入居時期データ ${totalMoveIn}`);
-
-        return {
-            id: propertyInfo.id,
-            name: propertyInfo.name,
-            url: propertyInfo.url,
-            count: count,
-            moveInBreakdown: moveInBreakdown,
-            success: true
-        };
-
-    } catch (e) {
-        console.error(`  エラー: ${e}`);
-        return {
-            id: propertyInfo.id,
-            name: propertyInfo.name,
-            url: propertyInfo.url,
-            count: 0,
-            moveInBreakdown: {},
-            success: false,
-            error: String(e)
-        };
     }
+
+    return {
+        id: propertyInfo.id,
+        name: propertyInfo.name,
+        url: propertyInfo.url,
+        count: 0,
+        moveInBreakdown: {},
+        success: false,
+        error: String(lastError)
+    };
 }
 
 async function main() {
@@ -100,7 +125,8 @@ async function main() {
         properties.map(p => fetchPropertyData(p))
     );
 
-    const successful = results.filter(p => p.success);
+    // 物件数が0件のデータを除外（取得失敗とみなす）
+    const successful = results.filter(p => p.success && p.count > 0);
 
     if (successful.length > 0) {
         const now = getJstNow();
@@ -108,7 +134,7 @@ async function main() {
             timestamp: '',
             date: formatDate(now),
             time: formatTime(now),
-            properties: results
+            properties: successful // 成功した（0件でない）データのみ保存
         };
 
         // timestampの設定（JSTオフセット付き）
@@ -125,7 +151,7 @@ async function main() {
         saveHistory(history);
         console.log(`保存完了: ${successful.length}/${properties.length} 物件`);
     } else {
-        console.log("データ取得失敗");
+        console.log("有効なデータ（物件数 > 0）が取得できませんでした");
     }
 
     console.log(`終了: ${formatDate(getJstNow())} ${formatTime(getJstNow())} JST`);

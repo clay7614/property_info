@@ -187,12 +187,6 @@ function createEmailContent(data: HistoryEntry, changes: Change[] | null): strin
         lines.push("-".repeat(40));
         lines.push(`[物件] ${prop.name}`);
         lines.push(`   空室数: ${prop.count}件`);
-
-        if (prop.moveInBreakdown) {
-            lines.push("   入居時期:");
-            lines.push(formatMoveInBreakdown(prop.moveInBreakdown));
-        }
-
         lines.push(`   URL: ${prop.url}`);
         lines.push("");
     }
@@ -258,21 +252,28 @@ async function main() {
         changes = detectChanges(data.properties, previousData.properties);
     }
 
+    const hasMarch2026Change = changes ? changes.some(c => c.is_march_2026) : false;
+
     if (!changes) {
         console.log("物件情報に変更がありません");
         if (!FORCE_SEND) {
             process.exit(0);
         }
         console.log("FORCE_SEND=true のため送信を継続します");
+    } else if (!hasMarch2026Change) {
+        console.log("変更はありましたが、26年3月入居の物件に変化がないため送信をスキップします");
+        if (!FORCE_SEND) {
+            process.exit(0);
+        }
+        console.log("FORCE_SEND=true のため送信を継続します");
     } else {
-        console.log(`変更を検出しました（${changes.length}件）`);
+        console.log(`26年3月入居の変更を検出しました（${changes.length}件の変更中）`);
     }
 
     const body = createEmailContent(data, changes);
     const marchCount = countMarch2026(data.properties);
     const dateStr = data.date;
     const timeStr = data.time;
-    const hasMarch2026Change = changes ? changes.some(c => c.is_march_2026) : false;
 
     let subject = "";
     if (hasMarch2026Change) {
