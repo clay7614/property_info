@@ -703,15 +703,6 @@
         "success": true
       },
       {
-        "id": "esreed_glanz",
-        "name": "エスリード弁天町グランツ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 503"
-      },
-      {
         "id": "forearize_cross",
         "name": "フォーリアライズ弁天町クロス",
         "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
@@ -1038,15 +1029,6 @@
           "25年12月下旬": 3
         },
         "success": true
-      },
-      {
-        "id": "esreed_glanz",
-        "name": "エスリード弁天町グランツ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 503"
       },
       {
         "id": "forearize_cross",
@@ -2050,15 +2032,6 @@
     "date": "2025-12-24",
     "time": "07:00:27",
     "properties": [
-      {
-        "id": "esreed_grande",
-        "name": "エスリードレジデンス大阪弁天町",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002461672/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 500"
-      },
       {
         "id": "esreed_glanz",
         "name": "エスリード弁天町グランツ",
@@ -3553,15 +3526,6 @@
         "success": true
       },
       {
-        "id": "esreed_glanz",
-        "name": "エスリード弁天町グランツ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 503"
-      },
-      {
         "id": "forearize_cross",
         "name": "フォーリアライズ弁天町クロス",
         "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
@@ -3671,15 +3635,6 @@
         "success": true
       },
       {
-        "id": "esreed_glanz",
-        "name": "エスリード弁天町グランツ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 500"
-      },
-      {
         "id": "forearize_cross",
         "name": "フォーリアライズ弁天町クロス",
         "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
@@ -3692,15 +3647,6 @@
           "26年5月下旬": 2
         },
         "success": true
-      },
-      {
-        "id": "property_1000596960",
-        "name": "ジアコスモ大阪ベイシティ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1000596960/",
-        "count": 0,
-        "moveInBreakdown": {},
-        "success": false,
-        "error": "AxiosError: Request failed with status code 500"
       }
     ]
   },
