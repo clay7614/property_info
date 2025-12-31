@@ -8,6 +8,7 @@
 - **デプロイ**: GitHub Pages
 - **CI/CD**: GitHub Actions
 - **対象ブラウザ**: モダンブラウザ（Chrome, Firefox, Safari, Edge）
+- **UIデザイン**: Material 3 Expressive
 
 ### 言語とコメント
 
