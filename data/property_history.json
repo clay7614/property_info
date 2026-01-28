@@ -1,63 +1,5 @@
 [
   {
-    "timestamp": "2026-01-16T13:00:30+09:00",
-    "date": "2026-01-16",
-    "time": "13:00:30",
-    "properties": [
-      {
-        "id": "esreed_grande",
-        "name": "エスリードレジデンス大阪弁天町",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002461672/",
-        "count": 92,
-        "moveInBreakdown": {
-          "即入居可": 42,
-          "相談": 47,
-          "26年2月中旬": 3
-        },
-        "success": true
-      },
-      {
-        "id": "esreed_glanz",
-        "name": "エスリード弁天町グランツ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
-        "count": 8,
-        "moveInBreakdown": {
-          "相談": 4,
-          "即入居可": 3,
-          "26年1月下旬": 1
-        },
-        "success": true
-      },
-      {
-        "id": "forearize_cross",
-        "name": "フォーリアライズ弁天町クロス",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
-        "count": 10,
-        "moveInBreakdown": {
-          "即入居可": 3,
-          "26年1月中旬": 1,
-          "相談": 3,
-          "26年5月下旬": 3
-        },
-        "success": true
-      },
-      {
-        "id": "property_1000596960",
-        "name": "ジアコスモ大阪ベイシティ",
-        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1000596960/",
-        "count": 13,
-        "moveInBreakdown": {
-          "26年1月下旬": 1,
-          "26年2月下旬": 5,
-          "即入居可": 3,
-          "26年2月上旬": 1,
-          "相談": 3
-        },
-        "success": true
-      }
-    ]
-  },
-  {
     "timestamp": "2026-01-16T14:00:29+09:00",
     "date": "2026-01-16",
     "time": "14:00:29",
@@ -11686,6 +11628,65 @@
           "26年2月上旬": 1,
           "即入居可": 2,
           "相談": 2,
+          "26年2月中旬": 1
+        },
+        "success": true
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-01-28T21:00:29+09:00",
+    "date": "2026-01-28",
+    "time": "21:00:29",
+    "properties": [
+      {
+        "id": "esreed_grande",
+        "name": "エスリードレジデンス大阪弁天町",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002461672/",
+        "count": 65,
+        "moveInBreakdown": {
+          "相談": 35,
+          "即入居可": 27,
+          "26年2月中旬": 3
+        },
+        "success": true
+      },
+      {
+        "id": "esreed_glanz",
+        "name": "エスリード弁天町グランツ",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002440443/",
+        "count": 13,
+        "moveInBreakdown": {
+          "相談": 6,
+          "26年3月中旬": 3,
+          "即入居可": 2,
+          "26年1月下旬": 1,
+          "26年3月下旬": 1
+        },
+        "success": true
+      },
+      {
+        "id": "forearize_cross",
+        "name": "フォーリアライズ弁天町クロス",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1002426103/",
+        "count": 8,
+        "moveInBreakdown": {
+          "相談": 2,
+          "26年5月下旬": 5,
+          "即入居可": 1
+        },
+        "success": true
+      },
+      {
+        "id": "property_1000596960",
+        "name": "ジアコスモ大阪ベイシティ",
+        "url": "https://suumo.jp/library/tf_27/sc_27107/to_1000596960/",
+        "count": 8,
+        "moveInBreakdown": {
+          "26年2月上旬": 1,
+          "即入居可": 2,
+          "相談": 2,
+          "26年2月下旬": 2,
           "26年2月中旬": 1
         },
         "success": true
